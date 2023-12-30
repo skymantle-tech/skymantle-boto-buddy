@@ -34,6 +34,7 @@ dependencies = [
   "bandit",
   "black",
   "ruff",
+  "moto[ssm]"
 ]
 path = ".venv"
 
@@ -42,8 +43,8 @@ _bandit = "bandit -c pyproject.toml -r {args:.}"
 _ruff = "ruff {args:.}"
 _black = "black --check --diff {args:.}"
 _mypy = "mypy --install-types --non-interactive {args:.}"
-cov = "pytest -v --cov-config=pyproject.toml --cov {args} "
-no-cov = "cov --no-cov {args}"
+cov = "pytest -v --cov-config=pyproject.toml --cov {args:./src} "
+
 
 [tool.mypy]
 exclude = [
@@ -122,7 +123,7 @@ ban-relative-imports = "all"
 [tool.coverage.run]
 branch = true
 parallel = true
-source = ["."]
+source = ["src"]
 omit = [
     ".venv/*",
     "tests/*",

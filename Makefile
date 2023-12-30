@@ -1,3 +1,6 @@
+unitTests:
+	hatch run cov
+
 lintAndAnalysis:
 	hatch run _ruff
 	hatch run _bandit
