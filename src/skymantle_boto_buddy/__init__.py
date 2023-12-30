@@ -2,7 +2,7 @@ from enum import Enum
 from functools import cache
 from typing import Any
 
-import boto3  # type: ignore
+import boto3
 
 
 class EnableCache(Enum):
