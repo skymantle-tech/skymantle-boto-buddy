@@ -20,7 +20,7 @@ def get_s3_client(region_name: str, config=None, enable_cache: EnableCache = Ena
         return skymantle_boto_buddy.get_boto3_client.__wrapped__("s3", region_name=region_name, config=config)
 
 
-default_region: str = os.environ.get("AWS_DEFAULT_REGION", None)
+default_region: str = os.environ.get("AWS_DEFAULT_REGION")
 if default_region:
     get_s3_client(default_region)
 
@@ -39,7 +39,7 @@ input_serializations = {
 
 
 def get_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_name: str = default_region):
-    s3_client = get_s3_client("s3", region_name, Config(signature_version="s3v4"))
+    s3_client = get_s3_client(region_name, Config(signature_version="s3v4"))
 
     response = s3_client.generate_presigned_url(
         "get_object", Params={"Bucket": bucket, "Key": key}, HttpMethod="GET", ExpiresIn=expires_in
@@ -49,7 +49,7 @@ def get_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_n
 
 
 def put_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_name: str = default_region):
-    s3_client = get_s3_client("s3", region_name, Config(signature_version="s3v4"))
+    s3_client = get_s3_client(region_name, Config(signature_version="s3v4"))
 
     response = s3_client.generate_presigned_url(
         "put_object", Params={"Bucket": bucket, "Key": key}, HttpMethod="PUT", ExpiresIn=expires_in
@@ -144,8 +144,7 @@ def copy(
 def list_objects_v2(
     bucket: str,
     prefix: str,
-    *,
-    max_keys: str | None = None,
+    max_keys: int | None = None,
     continuation_token: str | None = None,
     region_name: str = default_region,
 ):
@@ -163,8 +162,8 @@ def list_objects_v2(
 
     result = {"keys": [item["Key"] for item in response.get("Contents", [])]}
 
-    if response.get("ContinuationToken"):
-        result["continuation_token"] = response.get("ContinuationToken")
+    if response.get("NextContinuationToken"):
+        result["next_continuation_token"] = response.get("NextContinuationToken")
 
     return result
 
