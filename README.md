@@ -1,0 +1,1 @@
+# skymantle-boto-buddy
