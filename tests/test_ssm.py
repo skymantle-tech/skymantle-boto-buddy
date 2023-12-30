@@ -3,6 +3,7 @@ from importlib import reload
 
 import boto3
 import pytest
+from botocore.exceptions import NoRegionError
 from moto import mock_ssm
 from pytest_mock import MockerFixture
 
@@ -18,23 +19,27 @@ def environment(mocker: MockerFixture):
 
 
 @mock_ssm
-def test_get_parameter_no_default_region():
+def test_no_default_region():
     reload(ssm)
 
-    ssm_client = boto3.client("ssm", region_name="ca-central-1")
-    ssm_client.put_parameter(Name="some_key", Type="String", Value="some value")
+    with pytest.raises(NoRegionError) as e:
+        ssm.get_parameter("some_key")
 
-    result = ssm.get_parameter("some_key", region_name="ca-central-1")
+    assert str(e.value) == "You must specify a region."
 
-    assert result == "some value"
+
+@mock_ssm
+def test_manual_region():
+    reload(ssm)
+
+    client = ssm.get_ssm_client(region_name="ca-central-1")
+
+    assert type(client).__name__ == "SSM"
 
 
 @mock_ssm
 def test_ssm_client_cache():
     reload(ssm)
-
-    ssm_client = boto3.client("ssm", region_name="ca-central-1")
-    ssm_client.put_parameter(Name="some_key", Type="String", Value="some value")
 
     ssm_client_cached_one = ssm.get_ssm_client("ca-central-1", EnableCache.YES)
     ssm_client_cached_two = ssm.get_ssm_client("ca-central-1", EnableCache.YES)
