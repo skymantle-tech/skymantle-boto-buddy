@@ -7,7 +7,7 @@ import boto3
 
 class EnableCache(Enum):
     YES = 1
-    NO = 1
+    NO = 2
 
 
 @cache
