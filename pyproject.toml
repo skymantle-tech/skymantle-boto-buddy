@@ -106,7 +106,9 @@ ignore = [
   # Ignore checks for use `datetime.UTC` alias
   "UP017",
   # Ignore checks for f-string literal in exception message
-  "EM102"
+  "EM102",
+  # Ignore too many arguments in function definition
+  "PLR0913"
 ]
 unfixable = []
 

@@ -3,7 +3,10 @@ import os
 from enum import Enum
 from typing import Any
 
-import skymantle_boto_buddy
+from boto3 import Session
+from botocore.client import Config
+
+from skymantle_boto_buddy import EnableCache, get_boto3_resource_v2
 
 logger = logging.getLogger()
 
@@ -16,17 +19,22 @@ class ReturnValues(Enum):
     UPDATED_NEW = 5
 
 
-def get_dynamodb_resource(region_name: str):
-    return skymantle_boto_buddy.get_boto3_resource("dynamodb", region_name)
+def get_dynamodb_resource(
+    region_name: str | None = None,
+    session: Session = None,
+    config: Config = None,
+    enable_cache: EnableCache = EnableCache.YES,
+) -> Any:
+    return get_boto3_resource_v2("dynamodb", region_name, session, config, enable_cache)
 
 
-default_region: str = os.environ.get("AWS_DEFAULT_REGION", None)
-if default_region:
-    get_dynamodb_resource(default_region)
+# When imported in a lambda function will load the boto client during initialization
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
+    get_dynamodb_resource()
 
 
-def get_table(table_name: str, region_name: str = default_region):
-    dynamo_db = get_dynamodb_resource(region_name)
+def get_table(table_name: str, region_name: str | None = None, session: Session = None):
+    dynamo_db = get_dynamodb_resource(region_name, session)
     return dynamo_db.Table(table_name)
 
 
@@ -34,9 +42,10 @@ def put_item_simplified(
     table_name: str,
     item: dict[str, Any],
     return_values: ReturnValues = ReturnValues.NONE,
-    region_name: str = default_region,
+    region_name: str | None = None,
+    session: Session = None,
 ) -> dict:
-    table = get_table(table_name, region_name)
+    table = get_table(table_name, region_name, session)
 
     response = table.put_item(Item=item, ReturnValues=return_values.name)
 
@@ -48,9 +57,10 @@ def update_item_simplified(
     key: dict[str, Any],
     update_map: dict[str, Any],
     return_values: ReturnValues = ReturnValues.NONE,
-    region_name: str = default_region,
+    region_name: str | None = None,
+    session: Session = None,
 ):
-    table = get_table(table_name, region_name)
+    table = get_table(table_name, region_name, session)
 
     expressions: list[str] = []
     values = {}
@@ -76,8 +86,8 @@ def update_item_simplified(
     return response
 
 
-def get_item(table_name: str, key: dict[str, Any], region_name: str = default_region) -> dict:
-    table = get_table(table_name, region_name)
+def get_item(table_name: str, key: dict[str, Any], region_name: str | None = None, session: Session = None) -> dict:
+    table = get_table(table_name, region_name, session)
 
     response = table.get_item(Key=key)
 
@@ -85,7 +95,7 @@ def get_item(table_name: str, key: dict[str, Any], region_name: str = default_re
     return item
 
 
-def delete_item(table_name: str, key: dict[str, Any], region_name: str = default_region) -> None:
+def delete_item(table_name: str, key: dict[str, Any], region_name: str | None = None, session: Session = None) -> None:
     table = get_table(table_name, region_name)
 
     table.delete_item(Key=key)
@@ -96,9 +106,10 @@ def query_no_paging(
     key_condition_expression,
     index_name: str | None = None,
     limit: int | None = None,
-    region_name: str = default_region,
+    region_name: str | None = None,
+    session: Session = None,
 ) -> list[dict[str, Any]]:
-    table = get_table(table_name, region_name)
+    table = get_table(table_name, region_name, session)
 
     query_kwargs = {
         "KeyConditionExpression": key_condition_expression,
