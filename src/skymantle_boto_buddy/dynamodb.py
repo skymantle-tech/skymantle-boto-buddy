@@ -4,7 +4,6 @@ from enum import Enum
 from typing import Any
 
 import skymantle_boto_buddy
-from skymantle_boto_buddy import EnableCache
 
 logger = logging.getLogger()
 
@@ -17,11 +16,8 @@ class ReturnValues(Enum):
     UPDATED_NEW = 5
 
 
-def get_dynamodb_resource(region_name: str, enable_cache: EnableCache = EnableCache.YES):
-    if enable_cache == EnableCache.YES:
-        return skymantle_boto_buddy.get_boto3_resource("dynamodb", region_name)
-    else:
-        return skymantle_boto_buddy.get_boto3_resource.__wrapped__("dynamodb", region_name)
+def get_dynamodb_resource(region_name: str):
+    return skymantle_boto_buddy.get_boto3_resource("dynamodb", region_name)
 
 
 default_region: str = os.environ.get("AWS_DEFAULT_REGION", None)
@@ -29,8 +25,8 @@ if default_region:
     get_dynamodb_resource(default_region)
 
 
-def get_table(table_name: str, region_name: str = default_region, enable_cache: EnableCache = EnableCache.YES):
-    dynamo_db = get_dynamodb_resource(region_name, enable_cache)
+def get_table(table_name: str, region_name: str = default_region):
+    dynamo_db = get_dynamodb_resource(region_name)
     return dynamo_db.Table(table_name)
 
 
@@ -96,7 +92,11 @@ def delete_item(table_name: str, key: dict[str, Any], region_name: str = default
 
 
 def query_no_paging(
-    table_name: str, key_condition_expression, index_name: str | None = None, region_name: str = default_region
+    table_name: str,
+    key_condition_expression,
+    index_name: str | None = None,
+    limit: int = None,
+    region_name: str = default_region,
 ) -> list[dict[str, Any]]:
     table = get_table(table_name, region_name)
 
@@ -106,6 +106,9 @@ def query_no_paging(
 
     if index_name:
         query_kwargs["IndexName"] = index_name
+
+    if limit:
+        query_kwargs["Limit"] = limit
 
     items = []
 

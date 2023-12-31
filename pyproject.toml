@@ -34,7 +34,7 @@ dependencies = [
   "bandit",
   "black",
   "ruff",
-  "moto[s3,ssm,cloudformation]"
+  "moto[s3,dynamodb,ssm,cloudformation]"
 ]
 path = ".venv"
 

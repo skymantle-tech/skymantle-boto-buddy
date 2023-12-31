@@ -10,7 +10,6 @@ class EnableCache(Enum):
     NO = 2
 
 
-@cache
 def get_boto3_session(  # noqa: PLR0913
     aws_access_key_id=None,
     aws_secret_access_key=None,
@@ -56,7 +55,6 @@ def get_boto3_client(  # noqa: PLR0913
     )
 
 
-@cache
 def get_boto3_resource(  # noqa: PLR0913
     service_name,
     region_name=None,
