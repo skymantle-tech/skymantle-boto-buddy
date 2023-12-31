@@ -23,4 +23,5 @@ jobs:
         run: make setup
       - name: Lint and Analysis
         run: make lintAndAnalysis
-
+      - name: Unit Tests
+        run: make unitTests

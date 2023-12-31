@@ -34,6 +34,7 @@ dependencies = [
   "bandit",
   "black",
   "ruff",
+  "moto[s3,dynamodb,ssm,cloudformation]"
 ]
 path = ".venv"
 
@@ -42,8 +43,8 @@ _bandit = "bandit -c pyproject.toml -r {args:.}"
 _ruff = "ruff {args:.}"
 _black = "black --check --diff {args:.}"
 _mypy = "mypy --install-types --non-interactive {args:.}"
-cov = "pytest -v --cov-config=pyproject.toml --cov {args} "
-no-cov = "cov --no-cov {args}"
+cov = "pytest -v --cov-config=pyproject.toml --cov {args:./src} "
+
 
 [tool.mypy]
 exclude = [
@@ -116,16 +117,17 @@ inline-quotes = "double"
 ban-relative-imports = "all"
 
 [tool.ruff.per-file-ignores]
-# Tests can use assertions, and relative imports
-"tests/**/*" = ["S101", "I001"]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "I001"]
 
 [tool.coverage.run]
 branch = true
 parallel = true
-source = ["."]
+source = ["src"]
 omit = [
     ".venv/*",
     "tests/*",
+    "src/skymantle_boto_buddy/__about__.py"
 ]
 
 [tool.coverage.report]
