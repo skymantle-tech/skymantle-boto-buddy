@@ -150,7 +150,7 @@ def test_get_object_csv_reader():
     s3_client.put_object(Bucket="some_bucket", Key="some_key", Body=b"col1,col2\ncol1value1,col2value2")
 
     csv_reader = s3.get_object_csv_reader("some_bucket", "some_key")
-    data = [row for row in csv_reader]
+    data = list(csv_reader)
 
     assert data[0]["col1"] == "col1value1"
     assert data[0]["col2"] == "col2value2"
@@ -296,7 +296,7 @@ def test_list_objects_v2_paging():
     assert result["keys"][0] == "prefix1/some_key_1"
     assert result["keys"][1] == "prefix1/some_key_2"
 
-    assert result["next_continuation_token"] == "prefix1/some_key_2"
+    assert result["next_continuation_token"] == "prefix1/some_key_2"  # noqa: S105
 
     result = s3.list_objects_v2("some_bucket", "prefix1", 2, result["next_continuation_token"])
 
@@ -310,14 +310,14 @@ def test_list_objects_v2_paging():
 def test_execute_sql_query_simplified():
     reload(s3)
 
-    SIMPLE_CSV = """a,b,c
+    simple_csv = """a,b,c
     e,r,f
     y,u,i
     q,w,y"""
 
     s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket="some_bucket")
-    s3_client.put_object(Bucket="some_bucket", Key="some_key", Body=SIMPLE_CSV)
+    s3_client.put_object(Bucket="some_bucket", Key="some_key", Body=simple_csv)
 
     query = "SELECT count(*) FROM S3Object"
 

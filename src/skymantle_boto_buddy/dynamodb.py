@@ -95,7 +95,7 @@ def query_no_paging(
     table_name: str,
     key_condition_expression,
     index_name: str | None = None,
-    limit: int = None,
+    limit: int | None = None,
     region_name: str = default_region,
 ) -> list[dict[str, Any]]:
     table = get_table(table_name, region_name)

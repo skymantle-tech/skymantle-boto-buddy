@@ -106,5 +106,4 @@ def test_get_stack_outputs():
 
     outputs = cloudformation.get_stack_outputs("some_stack")
 
-    print(outputs)
     assert "some_stack-s3bucket-" in outputs["S3Bucket"]

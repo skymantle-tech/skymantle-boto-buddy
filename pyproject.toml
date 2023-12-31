@@ -117,8 +117,8 @@ inline-quotes = "double"
 ban-relative-imports = "all"
 
 [tool.ruff.per-file-ignores]
-# Tests can use assertions, and relative imports
-"tests/**/*" = ["S101", "I001"]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*" = ["PLR2004", "S101", "I001"]
 
 [tool.coverage.run]
 branch = true
