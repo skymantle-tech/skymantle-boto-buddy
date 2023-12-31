@@ -1,31 +1,38 @@
 import os
+from typing import Any
 
-from skymantle_boto_buddy import EnableCache, get_boto3_client
+from boto3 import Session
+from botocore.client import Config
 
-
-def get_ssm_client(region_name: str, enable_cache: EnableCache = EnableCache.YES):
-    if enable_cache == EnableCache.YES:
-        return get_boto3_client("ssm", region_name)
-    else:
-        return get_boto3_client.__wrapped__("ssm", region_name)
+from skymantle_boto_buddy import EnableCache, get_boto3_client_v2
 
 
-default_region: str = os.environ.get("AWS_DEFAULT_REGION")
-if default_region:
-    get_ssm_client(default_region)
+def get_ssm_client(
+    region_name: str | None = None,
+    session: Session = None,
+    config: Config = None,
+    enable_cache: EnableCache = EnableCache.YES,
+) -> Any:
+    return get_boto3_client_v2("ssm", region_name, session, config, enable_cache)
 
 
-def get_parameter(key: str, region_name: str = default_region) -> str:
-    client = get_ssm_client(region_name)
+# When imported in a lambda function will load the boto client during initialization
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
+    get_ssm_client()
+
+
+def get_parameter(key: str, region_name: str | None = None, session: Session = None) -> str:
+    client = get_ssm_client(region_name, session)
+
     response = client.get_parameter(Name=key)
-
     value = response.get("Parameter", {}).get("Value")
 
     return value
 
 
-def get_parameter_decrypted(key: str, region_name: str = default_region) -> str:
-    client = get_ssm_client(region_name)
+def get_parameter_decrypted(key: str, region_name: str | None = None, session: Session = None) -> str:
+    client = get_ssm_client(region_name, session)
+
     response = client.get_parameter(Name=key, WithDecryption=True)
     value = response.get("Parameter", {}).get("Value")
 

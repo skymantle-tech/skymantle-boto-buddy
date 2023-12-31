@@ -4,6 +4,7 @@ from io import BytesIO
 
 import boto3
 import pytest
+from boto3 import Session
 from moto import mock_s3
 from pytest_mock import MockerFixture
 
@@ -14,7 +15,7 @@ from skymantle_boto_buddy import EnableCache, s3
 def environment(mocker: MockerFixture):
     return mocker.patch.dict(
         os.environ,
-        {"AWS_DEFAULT_REGION": "us-east-1"},
+        {"AWS_DEFAULT_REGION": "us-east-1", "AWS_LAMBDA_FUNCTION_NAME": "Test_Lambda_Function"},
     )
 
 
@@ -37,7 +38,16 @@ def test_no_default_region():
 def test_manual_region():
     reload(s3)
 
-    client = s3.get_s3_client(region_name="ca-central-1")
+    client = s3.get_s3_client("ca-central-1")
+
+    assert type(client).__name__ == "S3"
+
+
+@mock_s3
+def test_manual_session():
+    reload(s3)
+
+    client = s3.get_s3_client("ca-central-1", Session())
 
     assert type(client).__name__ == "S3"
 

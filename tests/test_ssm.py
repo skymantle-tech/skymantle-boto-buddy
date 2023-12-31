@@ -3,6 +3,7 @@ from importlib import reload
 
 import boto3
 import pytest
+from boto3 import Session
 from botocore.exceptions import NoRegionError
 from moto import mock_ssm
 from pytest_mock import MockerFixture
@@ -14,7 +15,7 @@ from skymantle_boto_buddy import EnableCache, ssm
 def environment(mocker: MockerFixture):
     return mocker.patch.dict(
         os.environ,
-        {"AWS_DEFAULT_REGION": "ca-central-1"},
+        {"AWS_DEFAULT_REGION": "ca-central-1", "AWS_LAMBDA_FUNCTION_NAME": "Test_Lambda_Function"},
     )
 
 
@@ -32,7 +33,16 @@ def test_no_default_region():
 def test_manual_region():
     reload(ssm)
 
-    client = ssm.get_ssm_client(region_name="ca-central-1")
+    client = ssm.get_ssm_client("ca-central-1")
+
+    assert type(client).__name__ == "SSM"
+
+
+@mock_ssm
+def test_manual_session():
+    reload(ssm)
+
+    client = ssm.get_ssm_client("ca-central-1", Session())
 
     assert type(client).__name__ == "SSM"
 
@@ -41,13 +51,13 @@ def test_manual_region():
 def test_ssm_client_cache():
     reload(ssm)
 
-    ssm_client_cached_one = ssm.get_ssm_client("ca-central-1", EnableCache.YES)
-    ssm_client_cached_two = ssm.get_ssm_client("ca-central-1", EnableCache.YES)
+    ssm_client_cached_one = ssm.get_ssm_client("ca-central-1", enable_cache=EnableCache.YES)
+    ssm_client_cached_two = ssm.get_ssm_client("ca-central-1", enable_cache=EnableCache.YES)
 
     assert ssm_client_cached_one == ssm_client_cached_two
 
-    ssm_client_no_cache_one = ssm.get_ssm_client("ca-central-1", EnableCache.NO)
-    ssm_client_no_cache_two = ssm.get_ssm_client("ca-central-1", EnableCache.NO)
+    ssm_client_no_cache_one = ssm.get_ssm_client("ca-central-1", enable_cache=EnableCache.NO)
+    ssm_client_no_cache_two = ssm.get_ssm_client("ca-central-1", enable_cache=EnableCache.NO)
 
     assert ssm_client_no_cache_one != ssm_client_no_cache_two
     assert ssm_client_cached_one != ssm_client_no_cache_one

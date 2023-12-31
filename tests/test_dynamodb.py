@@ -3,12 +3,13 @@ from importlib import reload
 
 import boto3
 import pytest
+from boto3 import Session
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import NoRegionError
 from moto import mock_dynamodb
 from pytest_mock import MockerFixture
 
-from skymantle_boto_buddy import dynamodb
+from skymantle_boto_buddy import EnableCache, dynamodb
 from skymantle_boto_buddy.dynamodb import ReturnValues
 
 
@@ -16,7 +17,7 @@ from skymantle_boto_buddy.dynamodb import ReturnValues
 def environment(mocker: MockerFixture):
     return mocker.patch.dict(
         os.environ,
-        {"AWS_DEFAULT_REGION": "ca-central-1"},
+        {"AWS_DEFAULT_REGION": "ca-central-1", "AWS_LAMBDA_FUNCTION_NAME": "Test_Lambda_Function"},
     )
 
 
@@ -34,9 +35,35 @@ def test_no_default_region():
 def test_manual_region():
     reload(dynamodb)
 
-    client = dynamodb.get_dynamodb_resource(region_name="ca-central-1")
+    client = dynamodb.get_dynamodb_resource("ca-central-1")
 
     assert type(client).__name__ == "dynamodb.ServiceResource"
+
+
+@mock_dynamodb
+def test_manual_session():
+    reload(dynamodb)
+
+    client = dynamodb.get_dynamodb_resource("ca-central-1", Session())
+
+    assert type(client).__name__ == "dynamodb.ServiceResource"
+
+
+@mock_dynamodb
+def test_dynamodb_client_cache():
+    reload(dynamodb)
+
+    db_client_cached_one = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.YES)
+    db_client_cached_two = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.YES)
+
+    assert id(db_client_cached_one) == id(db_client_cached_two)
+
+    db_client_no_cache_one = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.NO)
+    db_client_no_cache_two = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.NO)
+
+    assert id(db_client_no_cache_one) != id(db_client_no_cache_two)
+    assert id(db_client_cached_one) != id(db_client_no_cache_one)
+    assert id(db_client_cached_one) != id(db_client_no_cache_two)
 
 
 @mock_dynamodb

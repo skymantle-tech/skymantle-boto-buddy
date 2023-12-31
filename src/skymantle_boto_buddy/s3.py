@@ -5,24 +5,27 @@ import os
 from io import BytesIO
 from typing import Any
 
+from boto3 import Session
 from botocore.client import Config
 
-import skymantle_boto_buddy
-from skymantle_boto_buddy import EnableCache
+from skymantle_boto_buddy import EnableCache, get_boto3_client_v2
 
 logger = logging.getLogger()
 
 
-def get_s3_client(region_name: str, config=None, enable_cache: EnableCache = EnableCache.YES):
-    if enable_cache == EnableCache.YES:
-        return skymantle_boto_buddy.get_boto3_client("s3", region_name=region_name, config=config)
-    else:
-        return skymantle_boto_buddy.get_boto3_client.__wrapped__("s3", region_name=region_name, config=config)
+def get_s3_client(
+    region_name: str | None = None,
+    session: Session = None,
+    config: Config = None,
+    enable_cache: EnableCache = EnableCache.YES,
+) -> Any:
+    return get_boto3_client_v2("s3", region_name, session, config, enable_cache)
 
 
-default_region: str = os.environ.get("AWS_DEFAULT_REGION")
-if default_region:
-    get_s3_client(default_region)
+# When imported in a lambda function will load the boto client during initialization
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
+    get_s3_client()
+
 
 input_serializations = {
     "csv": {
@@ -38,8 +41,10 @@ input_serializations = {
 }
 
 
-def get_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_name: str = default_region):
-    s3_client = get_s3_client(region_name, Config(signature_version="s3v4"))
+def get_object_signed_url(
+    bucket: str, key: str, expires_in: int = 300, region_name: str | None = None, session: Session = None
+):
+    s3_client = get_s3_client(region_name, session, Config(signature_version="s3v4"))
 
     response = s3_client.generate_presigned_url(
         "get_object", Params={"Bucket": bucket, "Key": key}, HttpMethod="GET", ExpiresIn=expires_in
@@ -48,8 +53,10 @@ def get_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_n
     return response
 
 
-def put_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_name: str = default_region):
-    s3_client = get_s3_client(region_name, Config(signature_version="s3v4"))
+def put_object_signed_url(
+    bucket: str, key: str, expires_in: int = 300, region_name: str | None = None, session: Session = None
+):
+    s3_client = get_s3_client(region_name, session, Config(signature_version="s3v4"))
 
     response = s3_client.generate_presigned_url(
         "put_object", Params={"Bucket": bucket, "Key": key}, HttpMethod="PUT", ExpiresIn=expires_in
@@ -58,8 +65,8 @@ def put_object_signed_url(bucket: str, key: str, expires_in: int = 300, region_n
     return response
 
 
-def get_object(bucket: str, key: str, region_name: str = default_region):
-    s3_client = get_s3_client(region_name)
+def get_object(bucket: str, key: str, region_name: str | None = None, session: Session = None):
+    s3_client = get_s3_client(region_name, session)
     response = s3_client.get_object(
         Bucket=bucket,
         Key=key,
@@ -67,32 +74,34 @@ def get_object(bucket: str, key: str, region_name: str = default_region):
     return response
 
 
-def get_object_bytes(bucket: str, key: str, region_name: str = default_region):
-    response = get_object(bucket, key, region_name=region_name)
+def get_object_bytes(bucket: str, key: str, region_name: str | None = None, session: Session = None):
+    response = get_object(bucket, key, region_name, session)
     return response["Body"].read()
 
 
-def get_object_json(bucket: str, key: str, region_name: str = default_region):
-    s3_object = get_object_bytes(bucket, key, region_name=region_name)
+def get_object_json(bucket: str, key: str, region_name: str | None = None, session: Session = None):
+    s3_object = get_object_bytes(bucket, key, region_name, session)
     return json.loads(s3_object.decode("utf-8"))
 
 
-def get_object_csv_reader(bucket: str, key: str, region_name: str = default_region):
-    s3_object: bytes = get_object_bytes(bucket, key, region_name=region_name)
+def get_object_csv_reader(bucket: str, key: str, region_name: str | None = None, session: Session = None):
+    s3_object: bytes = get_object_bytes(bucket, key, region_name, session)
     return csv.DictReader(s3_object.decode("utf-8").splitlines(keepends=True))
 
 
-def upload_fileobj(bucket: str, key: str, object_data: BytesIO, region_name: str = default_region):
+def upload_fileobj(
+    bucket: str, key: str, object_data: BytesIO, region_name: str | None = None, session: Session = None
+):
     object_data.seek(0)
 
-    s3_client = get_s3_client(region_name)
+    s3_client = get_s3_client(region_name, session)
     response = s3_client.upload_fileobj(Bucket=bucket, Key=key, Fileobj=object_data)
 
     return response
 
 
-def put_object(bucket: str, key: str, object_data, region_name: str = default_region):
-    s3_client = get_s3_client(region_name)
+def put_object(bucket: str, key: str, object_data, region_name: str | None = None, session: Session = None):
+    s3_client = get_s3_client(region_name, session)
     response = s3_client.put_object(
         Bucket=bucket,
         Key=key,
@@ -102,20 +111,20 @@ def put_object(bucket: str, key: str, object_data, region_name: str = default_re
     return response
 
 
-def put_object_json(bucket: str, key: str, json_object, *, region_name: str = default_region):
-    return put_object(bucket, key, json.dumps(json_object), region_name=region_name)
+def put_object_json(bucket: str, key: str, json_object, *, region_name: str | None = None, session: Session = None):
+    return put_object(bucket, key, json.dumps(json_object), region_name, session)
 
 
-def delete_object(bucket: str, key: str, region_name: str = default_region):
-    s3_client = get_s3_client(region_name)
+def delete_object(bucket: str, key: str, region_name: str | None = None, session: Session = None):
+    s3_client = get_s3_client(region_name, session)
 
     response = s3_client.delete_object(Bucket=bucket, Key=key)
 
     return response
 
 
-def delete_objects(bucket: str, keys: list[str], *, region_name: str = default_region):
-    s3_client = get_s3_client(region_name)
+def delete_objects(bucket: str, keys: list[str], *, region_name: str | None = None, session: Session = None):
+    s3_client = get_s3_client(region_name, session)
 
     delete_objects = {"Objects": [{"Key": key} for key in keys]}
     response = s3_client.delete_objects(Bucket=bucket, Delete=delete_objects)
@@ -128,9 +137,10 @@ def copy(
     source_key: str,
     destination_bucket: str,
     destination_key: str,
-    region_name: str = default_region,
+    region_name: str | None = None,
+    session: Session = None,
 ):
-    s3_client = get_s3_client(region_name)
+    s3_client = get_s3_client(region_name, session)
 
     source = {
         "Bucket": source_bucket,
@@ -146,9 +156,10 @@ def list_objects_v2(
     prefix: str,
     max_keys: int | None = None,
     continuation_token: str | None = None,
-    region_name: str = default_region,
+    region_name: str | None = None,
+    session: Session = None,
 ):
-    s3_client = get_s3_client(region_name)
+    s3_client = get_s3_client(region_name, session)
 
     kwargs = {"Bucket": bucket, "Prefix": prefix}
 
@@ -173,7 +184,8 @@ def execute_sql_query_simplified(
     key: str,
     query: str,
     input_type: str,
-    region_name: str = default_region,
+    region_name: str | None = None,
+    session: Session = None,
 ) -> list[Any]:
     """Performs an S3 Select statement against a file in S3.
     The aws region used is the 'DefaultRegion' in os.environ.
@@ -195,7 +207,7 @@ def execute_sql_query_simplified(
         msg = f"Input type is not supported: {input_type}"
         raise Exception(msg)
 
-    s3_client = get_s3_client(region_name)
+    s3_client = get_s3_client(region_name, session)
     resp = s3_client.select_object_content(
         Bucket=bucket,
         Key=key,

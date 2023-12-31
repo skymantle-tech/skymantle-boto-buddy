@@ -4,6 +4,7 @@ from importlib import reload
 
 import boto3
 import pytest
+from boto3 import Session
 from botocore.exceptions import NoRegionError
 from moto import mock_cloudformation
 from pytest_mock import MockerFixture
@@ -32,7 +33,7 @@ cfn_template = {
 def environment(mocker: MockerFixture):
     return mocker.patch.dict(
         os.environ,
-        {"AWS_DEFAULT_REGION": "ca-central-1"},
+        {"AWS_DEFAULT_REGION": "ca-central-1", "AWS_LAMBDA_FUNCTION_NAME": "Test_Lambda_Function"},
     )
 
 
@@ -50,7 +51,16 @@ def test_no_default_region():
 def test_manual_region():
     reload(cloudformation)
 
-    client = cloudformation.get_cloudformation_client(region_name="ca-central-1")
+    client = cloudformation.get_cloudformation_client("ca-central-1")
+
+    assert type(client).__name__ == "CloudFormation"
+
+
+@mock_cloudformation
+def test_manual_session():
+    reload(cloudformation)
+
+    client = cloudformation.get_cloudformation_client("ca-central-1", Session())
 
     assert type(client).__name__ == "CloudFormation"
 
@@ -59,13 +69,13 @@ def test_manual_region():
 def test_cloudformation_client_cache():
     reload(cloudformation)
 
-    cfn_client_cached_one = cloudformation.get_cloudformation_client("ca-central-1", EnableCache.YES)
-    cfn_client_cached_two = cloudformation.get_cloudformation_client("ca-central-1", EnableCache.YES)
+    cfn_client_cached_one = cloudformation.get_cloudformation_client("ca-central-1", enable_cache=EnableCache.YES)
+    cfn_client_cached_two = cloudformation.get_cloudformation_client("ca-central-1", enable_cache=EnableCache.YES)
 
     assert cfn_client_cached_one == cfn_client_cached_two
 
-    cfn_client_no_cache_one = cloudformation.get_cloudformation_client("ca-central-1", EnableCache.NO)
-    cfn_client_no_cache_two = cloudformation.get_cloudformation_client("ca-central-1", EnableCache.NO)
+    cfn_client_no_cache_one = cloudformation.get_cloudformation_client("ca-central-1", enable_cache=EnableCache.NO)
+    cfn_client_no_cache_two = cloudformation.get_cloudformation_client("ca-central-1", enable_cache=EnableCache.NO)
 
     assert cfn_client_no_cache_one != cfn_client_no_cache_two
     assert cfn_client_cached_one != cfn_client_no_cache_one
