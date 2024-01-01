@@ -87,8 +87,8 @@ def test_cloudformation_client_cache():
 def test_describe_stacks():
     reload(cloudformation)
 
-    cfm_client = boto3.client("cloudformation", region_name="ca-central-1")
-    cfm_client.create_stack(StackName="some_stack", TemplateBody=json.dumps(cfn_template))
+    cfn_client = boto3.client("cloudformation", region_name="ca-central-1")
+    cfn_client.create_stack(StackName="some_stack", TemplateBody=json.dumps(cfn_template))
 
     response = cloudformation.describe_stacks("some_stack")
 
@@ -111,8 +111,8 @@ def test_describe_stacks_no_stack():
 def test_get_stack_outputs():
     reload(cloudformation)
 
-    cfm_client = boto3.client("cloudformation", region_name="ca-central-1")
-    cfm_client.create_stack(StackName="some_stack", TemplateBody=json.dumps(cfn_template))
+    cfn_client = boto3.client("cloudformation", region_name="ca-central-1")
+    cfn_client.create_stack(StackName="some_stack", TemplateBody=json.dumps(cfn_template))
 
     outputs = cloudformation.get_stack_outputs("some_stack")
 
