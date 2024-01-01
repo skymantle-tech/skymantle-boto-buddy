@@ -71,6 +71,22 @@ def test_s3_client_cache():
 
 @mock_s3
 @pytest.mark.usefixtures("environment")
+def test_get_bucket():
+    reload(s3)
+
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(Bucket="some_bucket")
+
+    bucket = s3.get_bucket("some_bucket")
+    bucket.put_object(Key="some_key", Body=b"File Data")
+
+    response = s3_client.get_object(Bucket="some_bucket", Key="some_key")
+
+    assert response["Body"].read() == b"File Data"
+
+
+@mock_s3
+@pytest.mark.usefixtures("environment")
 def test_get_object_signed_url():
     reload(s3)
 

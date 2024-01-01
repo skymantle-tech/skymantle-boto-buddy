@@ -1,6 +1,5 @@
 import csv
 import json
-import logging
 import os
 from io import BytesIO
 from typing import Any
@@ -8,9 +7,7 @@ from typing import Any
 from boto3 import Session
 from botocore.client import Config
 
-from skymantle_boto_buddy import EnableCache, get_boto3_client
-
-logger = logging.getLogger()
+from skymantle_boto_buddy import EnableCache, get_boto3_client, get_boto3_resource
 
 
 def get_s3_client(
@@ -22,23 +19,30 @@ def get_s3_client(
     return get_boto3_client("s3", region_name, session, config, enable_cache)
 
 
+def get_s3_resource(
+    region_name: str | None = None,
+    session: Session = None,
+    config: Config = None,
+    enable_cache: EnableCache = EnableCache.YES,
+) -> Any:
+    return get_boto3_resource("s3", region_name, session, config, enable_cache)
+
+
 # When imported in a lambda function will load the boto client during initialization
 if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
     get_s3_client()
+    get_s3_resource()
 
 
-input_serializations = {
-    "csv": {
-        "CSV": {
-            "FileHeaderInfo": "Use",
-            "AllowQuotedRecordDelimiter": True,
-            "RecordDelimiter": "\n",
-            "FieldDelimiter": ",",
-            "QuoteCharacter": '"',
-        },
-        "CompressionType": "NONE",
-    }
-}
+def get_bucket(
+    name: str,
+    region_name: str | None = None,
+    session: Session = None,
+    config: Config = None,
+    enable_cache: EnableCache = EnableCache.YES,
+) -> Any:
+    s3 = get_s3_resource(region_name, session, config, enable_cache)
+    return s3.Bucket(name)
 
 
 def get_object_signed_url(
@@ -199,8 +203,20 @@ def execute_sql_query_simplified(
     Returns:
         dict: The selected data
     """
-    logger.debug(f"Start exection on {bucket}/{key}")
-    logger.debug(query)
+
+    input_serializations = {
+        "csv": {
+            "CSV": {
+                "FileHeaderInfo": "Use",
+                "AllowQuotedRecordDelimiter": True,
+                "RecordDelimiter": "\n",
+                "FieldDelimiter": ",",
+                "QuoteCharacter": '"',
+            },
+            "CompressionType": "NONE",
+        }
+    }
+
     input_serialization = input_serializations.get(input_type)
 
     if not input_serialization:
@@ -228,7 +244,5 @@ def execute_sql_query_simplified(
     records = "".join(r.decode("utf-8") for r in record_list)
 
     result_list = [json.loads(item) for item in records.split("\n") if item]
-    logger.debug(f"{len(result_list)} record(s) have been selected")
-    logger.debug(result_list)
 
     return result_list
