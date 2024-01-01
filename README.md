@@ -5,7 +5,7 @@ A wrappper for boto3 to access common aws severless services primarily used for 
 When used within the context of an aws lambda function, no creditials are required and instances of boto3 resource and clients are created during lambda initialization.
 The library determines its running in the context of a lambda function but looking for the `AWS_LAMBDA_FUNCTION_NAME` environment variable.
 
-The boto3 client and resource objects are cached but it is possible to also get uncached instances.
+The boto3 client and resource objects are cached but it is possible to also get uncached instances or cache can be disabled globally by setting the `BOTO_BUDDY_DISABLE_CACHE` environment variable. Supported values are `1`, `true`, `yes` and `on`.
 
 The following project commands are supported:
 - `make setup` - Installs all dependencies ands creates virtual environment

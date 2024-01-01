@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from functools import cache
 from typing import Any
@@ -36,10 +37,12 @@ def get_boto3_client(
     Returns:
         Any: Service client instance
     """
-    if enable_cache == EnableCache.YES:
-        return __get_boto3_client(service_name, region_name, session, config)
-    else:
+    disable_cache = os.environ.get("BOTO_BUDDY_DISABLE_CACHE", "false")
+
+    if enable_cache.name == EnableCache.NO.name or disable_cache in ["1", "true", "yes", "on"]:
         return __get_boto3_client.__wrapped__(service_name, region_name, session, config)
+    else:
+        return __get_boto3_client(service_name, region_name, session, config)
 
 
 @cache
@@ -86,10 +89,12 @@ def get_boto3_resource(
     Returns:
         Any: Subclass of :py:class:`~boto3.resources.base.ServiceResource`
     """
-    if enable_cache == EnableCache.YES:
-        return __get_boto3_resource(service_name, region_name, session, config)
-    else:
+    disable_cache = os.environ.get("BOTO_BUDDY_DISABLE_CACHE", "false")
+
+    if enable_cache.name == EnableCache.NO.name or disable_cache in ["1", "true", "yes", "on"]:
         return __get_boto3_resource.__wrapped__(service_name, region_name, session, config)
+    else:
+        return __get_boto3_resource(service_name, region_name, session, config)
 
 
 @cache

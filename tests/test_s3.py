@@ -246,7 +246,7 @@ def test_delete_object():
 
 @mock_s3
 @pytest.mark.usefixtures("environment")
-def test_delete_objects():
+def test_delete_objects_simplified():
     reload(s3)
 
     s3_client = boto3.client("s3")
@@ -254,7 +254,7 @@ def test_delete_objects():
     s3_client.put_object(Bucket="some_bucket", Key="some_key_1", Body=b"File Data")
     s3_client.put_object(Bucket="some_bucket", Key="some_key_2", Body=b"File Data")
 
-    s3.delete_objects("some_bucket", ["some_key_1", "some_key_2"])
+    s3.delete_objects_simplified("some_bucket", ["some_key_1", "some_key_2"])
 
     with pytest.raises(Exception) as e:
         s3_client.get_object(Bucket="some_bucket", Key="some_key_1")
@@ -322,9 +322,9 @@ def test_list_objects_v2_paging():
     assert result["keys"][0] == "prefix1/some_key_1"
     assert result["keys"][1] == "prefix1/some_key_2"
 
-    assert result["next_continuation_token"] == "prefix1/some_key_2"  # noqa: S105
+    assert result["NextContinuationToken"] == "prefix1/some_key_2"
 
-    result = s3.list_objects_v2("some_bucket", "prefix1", 2, result["next_continuation_token"])
+    result = s3.list_objects_v2("some_bucket", "prefix1", 2, result["NextContinuationToken"])
 
     assert len(result["keys"]) == 2
     assert result["keys"][0] == "prefix1/some_key_3"
