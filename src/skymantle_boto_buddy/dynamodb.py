@@ -6,7 +6,7 @@ from typing import Any
 from boto3 import Session
 from botocore.client import Config
 
-from skymantle_boto_buddy import EnableCache, get_boto3_resource_v2
+from skymantle_boto_buddy import EnableCache, get_boto3_resource
 
 logger = logging.getLogger()
 
@@ -25,7 +25,7 @@ def get_dynamodb_resource(
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    return get_boto3_resource_v2("dynamodb", region_name, session, config, enable_cache)
+    return get_boto3_resource("dynamodb", region_name, session, config, enable_cache)
 
 
 # When imported in a lambda function will load the boto client during initialization

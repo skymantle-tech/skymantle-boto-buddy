@@ -4,7 +4,7 @@ from typing import Any
 from boto3 import Session
 from botocore.client import Config
 
-from skymantle_boto_buddy import EnableCache, get_boto3_client_v2
+from skymantle_boto_buddy import EnableCache, get_boto3_client
 
 
 def get_ssm_client(
@@ -13,7 +13,7 @@ def get_ssm_client(
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    return get_boto3_client_v2("ssm", region_name, session, config, enable_cache)
+    return get_boto3_client("ssm", region_name, session, config, enable_cache)
 
 
 # When imported in a lambda function will load the boto client during initialization

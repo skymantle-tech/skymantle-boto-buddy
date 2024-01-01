@@ -6,7 +6,7 @@ from boto3 import Session
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
-from skymantle_boto_buddy import EnableCache, get_boto3_client_v2
+from skymantle_boto_buddy import EnableCache, get_boto3_client
 
 logger = logging.getLogger()
 
@@ -17,7 +17,7 @@ def get_cloudformation_client(
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    return get_boto3_client_v2("cloudformation", region_name, session, config, enable_cache)
+    return get_boto3_client("cloudformation", region_name, session, config, enable_cache)
 
 
 # When imported in a lambda function will load the boto client during initialization
