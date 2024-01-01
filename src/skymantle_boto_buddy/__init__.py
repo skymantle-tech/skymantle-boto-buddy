@@ -12,18 +12,18 @@ class EnableCache(Enum):
     NO = 2
 
 
-def get_boto3_client_v2(
+def get_boto3_client(
     service_name: str,
     region_name: str | None = None,
     session: Session = None,
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    """Create a low-level service client by name. A wrapper for __get_boto3_client_v2,
+    """Create a low-level service client by name. A wrapper for __get_boto3_client,
     because calling the method with default values and passing in default values are
     not treated as equivalent.
 
-    __get_boto3_client_v2("s3") != __get_boto3_client_v2("s3", None, None, None)
+    __get_boto3_client("s3") != __get_boto3_client("s3", None, None, None)
 
     Args:
         service_name (str): The name of a service, e.g. 's3' or 'ec2'.
@@ -37,13 +37,13 @@ def get_boto3_client_v2(
         Any: Service client instance
     """
     if enable_cache == EnableCache.YES:
-        return __get_boto3_client_v2(service_name, region_name, session, config)
+        return __get_boto3_client(service_name, region_name, session, config)
     else:
-        return __get_boto3_client_v2.__wrapped__(service_name, region_name, session, config)
+        return __get_boto3_client.__wrapped__(service_name, region_name, session, config)
 
 
 @cache
-def __get_boto3_client_v2(service_name: str, region_name: str, session: Session, config: Config) -> Any:
+def __get_boto3_client(service_name: str, region_name: str, session: Session, config: Config) -> Any:
     """Create a low-level service client by name. Used Ben Kehoe's suggestion for handling session.
 
     https://ben11kehoe.medium.com/boto3-sessions-and-why-you-should-use-them-9b094eb5ca8e
@@ -62,18 +62,18 @@ def __get_boto3_client_v2(service_name: str, region_name: str, session: Session,
     return session.client(service_name, region_name=region_name, config=config)
 
 
-def get_boto3_resource_v2(
+def get_boto3_resource(
     service_name: str,
     region_name: str | None = None,
     session: Session = None,
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    """Create a resource service client by name. A wrapper for __get_boto3_resource_v2,
+    """Create a resource service client by name. A wrapper for __get_boto3_resource,
     because calling the method with default values and passing in default values are
     not treated as equivalent.
 
-    __get_boto3_resource_v2("s3") != __get_boto3_resource_v2("s3", None, None, None)
+    __get_boto3_resource("s3") != __get_boto3_resource("s3", None, None, None)
 
     Args:
         service_name (str): The name of a service, e.g. 's3' or 'ec2'.
@@ -87,13 +87,13 @@ def get_boto3_resource_v2(
         Any: Subclass of :py:class:`~boto3.resources.base.ServiceResource`
     """
     if enable_cache == EnableCache.YES:
-        return __get_boto3_resource_v2(service_name, region_name, session, config)
+        return __get_boto3_resource(service_name, region_name, session, config)
     else:
-        return __get_boto3_resource_v2.__wrapped__(service_name, region_name, session, config)
+        return __get_boto3_resource.__wrapped__(service_name, region_name, session, config)
 
 
 @cache
-def __get_boto3_resource_v2(service_name: str, region_name: str, session: Session, config: Config) -> Any:
+def __get_boto3_resource(service_name: str, region_name: str, session: Session, config: Config) -> Any:
     """Create a resource service client by name. Used Ben Kehoe's suggestion for handling session.
 
     https://ben11kehoe.medium.com/boto3-sessions-and-why-you-should-use-them-9b094eb5ca8e
