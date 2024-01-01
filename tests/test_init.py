@@ -1,10 +1,7 @@
 import os
 from importlib import reload
-from io import BytesIO
 
-import boto3
 import pytest
-from boto3 import Session
 from moto import mock_s3
 from pytest_mock import MockerFixture
 
@@ -21,18 +18,18 @@ def environment(mocker: MockerFixture):
 
 @mock_s3
 @pytest.mark.usefixtures("environment")
-def test__client_cache():
+def test_disable_client_cache():
     reload(skymantle_boto_buddy)
 
-    sts_client_cached_one = skymantle_boto_buddy.get_boto3_client("sts")
-    sts_client_cached_two = skymantle_boto_buddy.get_boto3_client("sts")
+    s3_client_cached_one = skymantle_boto_buddy.get_boto3_client("s3")
+    s3_client_cached_two = skymantle_boto_buddy.get_boto3_client("s3")
 
-    assert sts_client_cached_one != sts_client_cached_two
+    assert id(s3_client_cached_one) != id(s3_client_cached_two)
 
 
 @mock_s3
 @pytest.mark.usefixtures("environment")
-def test__client_cache():
+def test_disable_resource_cache():
     reload(skymantle_boto_buddy)
 
     s3_client_cached_one = skymantle_boto_buddy.get_boto3_resource("s3")

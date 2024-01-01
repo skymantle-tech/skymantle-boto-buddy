@@ -92,10 +92,8 @@ def get_boto3_resource(
     disable_cache = os.environ.get("BOTO_BUDDY_DISABLE_CACHE", "false")
 
     if enable_cache.name == EnableCache.NO.name or disable_cache in ["1", "true", "yes", "on"]:
-        print("no cache")
         return __get_boto3_resource.__wrapped__(service_name, region_name, session, config)
     else:
-        print("cache")
         return __get_boto3_resource(service_name, region_name, session, config)
 
 
