@@ -322,7 +322,7 @@ def test_list_objects_v2_paging():
     assert result["keys"][0] == "prefix1/some_key_1"
     assert result["keys"][1] == "prefix1/some_key_2"
 
-    assert result["NextContinuationToken"] == "prefix1/some_key_2"  # noqa: S105
+    assert result["NextContinuationToken"] == "prefix1/some_key_2"
 
     result = s3.list_objects_v2("some_bucket", "prefix1", 2, result["NextContinuationToken"])
 
