@@ -127,7 +127,7 @@ def delete_object(bucket: str, key: str, region_name: str | None = None, session
     return response
 
 
-def delete_objects(bucket: str, keys: list[str], *, region_name: str | None = None, session: Session = None):
+def delete_objects_simplified(bucket: str, keys: list[str], *, region_name: str | None = None, session: Session = None):
     s3_client = get_s3_client(region_name, session)
 
     delete_objects = {"Objects": [{"Key": key} for key in keys]}
@@ -178,7 +178,7 @@ def list_objects_v2(
     result = {"keys": [item["Key"] for item in response.get("Contents", [])]}
 
     if response.get("NextContinuationToken"):
-        result["next_continuation_token"] = response.get("NextContinuationToken")
+        result["NextContinuationToken"] = response.get("NextContinuationToken")
 
     return result
 
