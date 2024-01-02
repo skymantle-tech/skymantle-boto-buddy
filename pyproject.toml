@@ -65,14 +65,16 @@ exclude = '''
   | buck-out
   | build
   | dist
+  | setup.py
 )/
 '''
 
 [tool.bandit]
 skips = ['B324']
-exclude_dirs = [".venv", "tests", "dist"]
+exclude_dirs = [".venv", "tests", "dist", "setup.py"]
 
 [tool.ruff]
+exclude = [".venv", "setup.py"]
 target-version = "py311"
 line-length = 120
 select = [
@@ -129,7 +131,8 @@ source = ["src"]
 omit = [
     ".venv/*",
     "tests/*",
-    "src/skymantle_boto_buddy/__about__.py"
+    "src/skymantle_boto_buddy/__about__.py",
+    "setup.py"
 ]
 
 [tool.coverage.report]
