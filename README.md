@@ -90,3 +90,34 @@ from skymantle_boto_buddy import EnableCache, s3
 
 s3_client = get_s3_client(enable_cache=EnableCache.NO)
 ```
+
+- unit test a function with patching (also possible to use packages like [moto](https://github.com/getmoto/moto))
+
+```python
+# my_file.py
+from skymantle_boto_buddy import dynamodb
+
+def some_function():
+  # ...
+  item = dynamodb.get_item("table_name", {"PK": "some_key"})
+  
+  return item
+
+
+# my_test.py
+from unittest.mock import MagicMock
+import pytest
+from pytest_mock import MockerFixture
+import my_file
+
+@pytest.fixture()
+def mock_dynamodb(mocker: MockerFixture) -> MagicMock:
+    mock = mocker.patch("my_file.dynamodb")
+    return mock
+
+def test_some_function(mock_dynamodb):
+    mock_dynamodb.get_item.return_value = {"PK": "some_pk", "Name": "some value"}
+
+    result = my_file.some_function()
+    assert result == {"PK": "some_pk", "Name": "some value"}
+```
