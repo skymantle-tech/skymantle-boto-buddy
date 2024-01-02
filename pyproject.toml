@@ -144,6 +144,7 @@ pythonpath = "src"
 markers = []
 
 [tool.hatch.build.targets.sdist]
+support-legacy = true
 exclude = [
   "/.vscode",
   "/.github",
