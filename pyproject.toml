@@ -54,25 +54,19 @@ exclude = [
 
 [tool.black]
 line-length = 120
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.tox
-  | venv
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
+extend-exclude = '''
+(
+  ^/setup.py
+)
 '''
+
 
 [tool.bandit]
 skips = ['B324']
-exclude_dirs = [".venv", "tests", "dist"]
+exclude_dirs = [".venv", "tests", "dist", "setup.py"]
 
 [tool.ruff]
+exclude = [".venv", "setup.py"]
 target-version = "py311"
 line-length = 120
 select = [
@@ -129,7 +123,8 @@ source = ["src"]
 omit = [
     ".venv/*",
     "tests/*",
-    "src/skymantle_boto_buddy/__about__.py"
+    "src/skymantle_boto_buddy/__about__.py",
+    "setup.py"
 ]
 
 [tool.coverage.report]
@@ -144,6 +139,7 @@ pythonpath = "src"
 markers = []
 
 [tool.hatch.build.targets.sdist]
+support-legacy = true
 exclude = [
   "/.vscode",
   "/.github",
