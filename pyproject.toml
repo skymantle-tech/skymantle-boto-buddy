@@ -54,20 +54,12 @@ exclude = [
 
 [tool.black]
 line-length = 120
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.tox
-  | venv
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  | setup.py
-)/
+extend-exclude = '''
+(
+  ^/setup.py
+)
 '''
+
 
 [tool.bandit]
 skips = ['B324']
