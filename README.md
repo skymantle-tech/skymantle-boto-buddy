@@ -60,6 +60,18 @@ The library provides the following functions.
   - `get_cloudformation_client`
   - `describe_stacks`
   - `get_stack_outputs`
+- STS
+  - `get_sts_client`
+  - `get_caller_identity`
+  - `get_caller_account`
+- StepFunction
+  - `get_stepfunction_client`
+  - `start_execution`
+  - `start_sync_execution`
+  - `start_with_wait_for_completion`
+  - `describe_execution`
+- Logs
+  - `get_logs_client`
 
 
 ### Examples
