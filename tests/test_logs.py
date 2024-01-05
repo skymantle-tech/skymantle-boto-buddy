@@ -1,10 +1,8 @@
 import os
 from importlib import reload
 
-import boto3
 import pytest
 from boto3 import Session
-from botocore.exceptions import NoRegionError
 from moto import mock_logs
 from pytest_mock import MockerFixture
 
