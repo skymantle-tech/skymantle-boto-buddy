@@ -20,11 +20,11 @@ def get_boto3_client(
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    """Create a low-level service client by name. A wrapper for __get_boto3_client,
+    """Create a low-level service client by name. A wrapper for _get_boto3_client,
     because calling the method with default values and passing in default values are
     not treated as equivalent.
 
-    __get_boto3_client("s3") != __get_boto3_client("s3", None, None, None)
+    _get_boto3_client("s3") != _get_boto3_client("s3", None, None, None)
 
     Args:
         service_name (str): The name of a service, e.g. 's3' or 'ec2'.
@@ -40,13 +40,13 @@ def get_boto3_client(
     disable_cache = os.environ.get("BOTO_BUDDY_DISABLE_CACHE", "false")
 
     if enable_cache.name == EnableCache.NO.name or disable_cache in ["1", "true", "yes", "on"]:
-        return __get_boto3_client.__wrapped__(service_name, region_name, session, config)
+        return _get_boto3_client.__wrapped__(service_name, region_name, session, config)
     else:
-        return __get_boto3_client(service_name, region_name, session, config)
+        return _get_boto3_client(service_name, region_name, session, config)
 
 
 @cache
-def __get_boto3_client(service_name: str, region_name: str, session: Session, config: Config) -> Any:
+def _get_boto3_client(service_name: str, region_name: str, session: Session, config: Config) -> Any:
     """Create a low-level service client by name. Used Ben Kehoe's suggestion for handling session.
 
     https://ben11kehoe.medium.com/boto3-sessions-and-why-you-should-use-them-9b094eb5ca8e
@@ -72,11 +72,11 @@ def get_boto3_resource(
     config: Config = None,
     enable_cache: EnableCache = EnableCache.YES,
 ) -> Any:
-    """Create a resource service client by name. A wrapper for __get_boto3_resource,
+    """Create a resource service client by name. A wrapper for _get_boto3_resource,
     because calling the method with default values and passing in default values are
     not treated as equivalent.
 
-    __get_boto3_resource("s3") != __get_boto3_resource("s3", None, None, None)
+    _get_boto3_resource("s3") != _get_boto3_resource("s3", None, None, None)
 
     Args:
         service_name (str): The name of a service, e.g. 's3' or 'ec2'.
@@ -92,13 +92,13 @@ def get_boto3_resource(
     disable_cache = os.environ.get("BOTO_BUDDY_DISABLE_CACHE", "false")
 
     if enable_cache.name == EnableCache.NO.name or disable_cache in ["1", "true", "yes", "on"]:
-        return __get_boto3_resource.__wrapped__(service_name, region_name, session, config)
+        return _get_boto3_resource.__wrapped__(service_name, region_name, session, config)
     else:
-        return __get_boto3_resource(service_name, region_name, session, config)
+        return _get_boto3_resource(service_name, region_name, session, config)
 
 
 @cache
-def __get_boto3_resource(service_name: str, region_name: str, session: Session, config: Config) -> Any:
+def _get_boto3_resource(service_name: str, region_name: str, session: Session, config: Config) -> Any:
     """Create a resource service client by name. Used Ben Kehoe's suggestion for handling session.
 
     https://ben11kehoe.medium.com/boto3-sessions-and-why-you-should-use-them-9b094eb5ca8e
