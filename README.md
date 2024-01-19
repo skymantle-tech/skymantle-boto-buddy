@@ -1,3 +1,5 @@
+[![Status Checks](https://github.com/skymantle-tech/skymantle-boto-buddy/actions/workflows/status_checks.yml/badge.svg)](https://github.com/skymantle-tech/skymantle-boto-buddy/actions/workflows/status_checks.yml)
+
 # Skymantle Boto Buddy
 
 A wrappper for boto3 to access common aws severless services primarily used for aws Lambda. By default the wrapper is dependent on using boto3 configuration through [environment variables](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables) for setting credentials for accessing aws resources. It's also possible to provide a `boto3.Session` object for setting credentials.
