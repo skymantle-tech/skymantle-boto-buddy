@@ -1,24 +1,23 @@
 # Skymantle Boto Buddy
 
-A wrappper for boto3 to access common aws severless services primarily used for aws Lambda. The wrapper is dependent on using boto3 configuration using [environment variables](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables) for setting credentials for accessing aws resources. It's also possible to provide a `boto3.Session` object for setting credentials.
+A wrappper for boto3 to access common aws severless services primarily used for aws Lambda. By default the wrapper is dependent on using boto3 configuration through [environment variables](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables) for setting credentials for accessing aws resources. It's also possible to provide a `boto3.Session` object for setting credentials.
 
-When used within the context of an aws lambda function, no creditials are required and instances of boto3 resource and clients are created during lambda initialization.
-The library determines its running in the context of a lambda function but looking for the `AWS_LAMBDA_FUNCTION_NAME` environment variable.
+When used within the context of an aws lambda function, no creditials are required and instances of boto3 resource and clients are created during lambda initialization when importing helpers. The library determines its running in the context of a lambda function but looking for the `AWS_LAMBDA_FUNCTION_NAME` environment variable.
 
 The boto3 client and resource objects are cached but it is possible to also get uncached instances or cache can be disabled globally by setting the `BOTO_BUDDY_DISABLE_CACHE` environment variable. Supported values are `1`, `true`, `yes` and `on`.
 
-The following project commands are supported:
-- `make setup` - Installs all dependencies ands creates virtual environment
-- `make unitTests` - runs unit tests
-- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
-- `make build` - Creates distribution
-
 ## Installation
+To install use:
 
-Currently the package isn't on pypi, however the GitHub repo can be referenced directly in a requirements file.  For example:
-- `skymantle_boto_buddy @ git+https://github.com/skymantle-tech/skymantle-boto-buddy@main`
+```
+pip3 install skymantle_boto_buddy
+```
 
-Using `skymantle_boto_buddy` will not include the boto3 dependency, useful when part of a lambda function and the lambda runtime version of boto3 or a layer is used.  To include boto3 use `skymantle_boto_buddy[boto3]`.
+Using `skymantle_boto_buddy` will not include the boto3 dependency, useful when part of a lambda function and the lambda runtime version or a layer is used.  To include boto3 use:
+
+```
+pip3 install skymantle_boto_buddy[boto3]
+```
 
 ## Usage
 
@@ -133,3 +132,11 @@ def test_some_function(mock_dynamodb):
     result = my_file.some_function()
     assert result == {"PK": "some_pk", "Name": "some value"}
 ```
+
+## Source Code Dev Notes
+
+The following project commands are supported:
+- `make setup` - Installs all dependencies ands creates virtual environment
+- `make unitTests` - runs unit tests
+- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
+- `make build` - Creates distribution

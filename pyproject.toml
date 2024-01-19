@@ -63,7 +63,7 @@ skips = ['B324']
 exclude_dirs = [".venv", "tests", "dist"]
 
 [tool.ruff]
-exclude = [".venv", "setup.py"]
+exclude = [".venv"]
 target-version = "py311"
 line-length = 120
 select = [
@@ -136,6 +136,7 @@ markers = []
 [tool.hatch.build.targets.sdist]
 support-legacy = true
 exclude = [
+  "/.vscode",
   "/.vscode",
   "/.github",
   ".gitignore",
