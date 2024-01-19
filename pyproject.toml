@@ -4,12 +4,19 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skymantle_boto_buddy"
-description = "A wrappper for boto3 to access common aws severless services."
-authors = [{ name = "Artin Yong-Bannayan", email = "ayongbannayan@skymantle.com" }]
-readme = "README.md"
-dynamic = ["version"]
-requires-python = ">=3.11"
+version = "0.2.0"
 dependencies=[]
+requires-python = ">=3.11"
+authors = [{ name = "Artin Yong-Bannayan", email = "ayongbannayan@skymantle.com" }]
+description = "A wrappper for boto3 to help access and test usage of common aws services."
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python",
+]
 
 [project.optional-dependencies]
 boto = ["boto3"]
@@ -20,9 +27,6 @@ Issues = "https://github.com/skymantle-tech/boto3-powertools/issues"
 
 [tool.hatch.metadata]
 allow-direct-references = true
-
-[tool.hatch.version]
-path = "src/skymantle_boto_buddy/__about__.py"
 
 [tool.hatch.envs.default]
 features = ["boto"]
@@ -45,7 +49,6 @@ _black = "black --check --diff {args:.}"
 _mypy = "mypy --install-types --non-interactive {args:.}"
 cov = "pytest -v --cov-config=pyproject.toml --cov {args:./src} "
 
-
 [tool.mypy]
 exclude = [
     "dist",
@@ -54,19 +57,13 @@ exclude = [
 
 [tool.black]
 line-length = 120
-extend-exclude = '''
-(
-  ^/setup.py
-)
-'''
-
 
 [tool.bandit]
 skips = ['B324']
-exclude_dirs = [".venv", "tests", "dist", "setup.py"]
+exclude_dirs = [".venv", "tests", "dist"]
 
 [tool.ruff]
-exclude = [".venv", "setup.py"]
+exclude = [".venv"]
 target-version = "py311"
 line-length = 120
 select = [
@@ -122,9 +119,7 @@ parallel = true
 source = ["src"]
 omit = [
     ".venv/*",
-    "tests/*",
-    "src/skymantle_boto_buddy/__about__.py",
-    "setup.py"
+    "tests/*"
 ]
 
 [tool.coverage.report]
@@ -141,6 +136,7 @@ markers = []
 [tool.hatch.build.targets.sdist]
 support-legacy = true
 exclude = [
+  "/.vscode",
   "/.vscode",
   "/.github",
   ".gitignore",
