@@ -23,8 +23,11 @@
     "cSpell.words": [
         "boto",
         "botocore",
+        "fileobj",
         "moto",
+        "pytest",
         "skymantle",
+        "stepfunction",
         "stepfunctions",
         "usefixtures"
     ]
