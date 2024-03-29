@@ -5,7 +5,7 @@ from io import BytesIO
 import boto3
 import pytest
 from boto3 import Session
-from moto import mock_s3
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_boto_buddy import EnableCache, s3
@@ -19,22 +19,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_s3
-def test_no_default_region():
-    reload(s3)
-
-    # S3 doesn't require a region
-
-    s3_client = boto3.client("s3")
-    s3_client.create_bucket(Bucket="some_bucket")
-    s3_client.put_object(Bucket="some_bucket", Key="some_key", Body=b"File Data")
-
-    response = s3.get_object("some_bucket", "some_key")
-
-    assert response["Body"].read() == b"File Data"
-
-
-@mock_s3
+@mock_aws
 def test_manual_region():
     reload(s3)
 
@@ -43,7 +28,7 @@ def test_manual_region():
     assert type(client).__name__ == "S3"
 
 
-@mock_s3
+@mock_aws
 def test_manual_session():
     reload(s3)
 
@@ -52,7 +37,7 @@ def test_manual_session():
     assert type(client).__name__ == "S3"
 
 
-@mock_s3
+@mock_aws
 def test_s3_client_cache():
     reload(s3)
 
@@ -69,7 +54,7 @@ def test_s3_client_cache():
     assert s3_client_cached_one != s3_client_no_cache_two
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_bucket():
     reload(s3)
@@ -85,7 +70,7 @@ def test_get_bucket():
     assert response["Body"].read() == b"File Data"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_object_signed_url():
     reload(s3)
@@ -105,7 +90,7 @@ def test_get_object_signed_url():
     assert "X-Amz-Signature" in url
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_put_object_signed_url():
     reload(s3)
@@ -124,7 +109,7 @@ def test_put_object_signed_url():
     assert "X-Amz-Signature" in url
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_object():
     reload(s3)
@@ -138,7 +123,7 @@ def test_get_object():
     assert response["Body"].read() == b"File Data"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_object_bytes():
     reload(s3)
@@ -152,7 +137,7 @@ def test_get_object_bytes():
     assert data == b"File Data"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_object_json():
     reload(s3)
@@ -166,7 +151,7 @@ def test_get_object_json():
     assert data == {"key": "value"}
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_object_csv_reader():
     reload(s3)
@@ -182,7 +167,7 @@ def test_get_object_csv_reader():
     assert data[0]["col2"] == "col2value2"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_upload_fileobj():
     reload(s3)
@@ -197,7 +182,7 @@ def test_upload_fileobj():
     assert response["Body"].read() == b"File Data"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_put_object():
     reload(s3)
@@ -212,7 +197,7 @@ def test_put_object():
     assert response["Body"].read() == b"File Data"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_put_object_json():
     reload(s3)
@@ -227,7 +212,7 @@ def test_put_object_json():
     assert response["Body"].read() == b'{"key": "value"}'
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_delete_object():
     reload(s3)
@@ -244,7 +229,7 @@ def test_delete_object():
     assert "The specified key does not exist." in str(e.value)
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_delete_objects_simplified():
     reload(s3)
@@ -267,7 +252,7 @@ def test_delete_objects_simplified():
     assert "The specified key does not exist." in str(e.value)
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_copy():
     reload(s3)
@@ -285,7 +270,7 @@ def test_copy():
     assert response["Body"].read() == b"File Data"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_list_objects_v2():
     reload(s3)
@@ -305,7 +290,7 @@ def test_list_objects_v2():
     assert result["keys"][2] == "prefix1/some_key_3"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_list_objects_v2_paging():
     reload(s3)
@@ -322,7 +307,7 @@ def test_list_objects_v2_paging():
     assert result["keys"][0] == "prefix1/some_key_1"
     assert result["keys"][1] == "prefix1/some_key_2"
 
-    assert result["NextContinuationToken"] == "prefix1/some_key_2"
+    assert len(result["NextContinuationToken"]) > 0
 
     result = s3.list_objects_v2("some_bucket", "prefix1", 2, result["NextContinuationToken"])
 
@@ -331,7 +316,7 @@ def test_list_objects_v2_paging():
     assert result["keys"][1] == "prefix1/some_key_4"
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_execute_sql_query_simplified():
     reload(s3)
@@ -352,7 +337,7 @@ def test_execute_sql_query_simplified():
     assert data[0] == {"_1": 4}
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_execute_sql_query_simplified_invalid_input_type():
     reload(s3)

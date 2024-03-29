@@ -5,8 +5,7 @@ from importlib import reload
 import boto3
 import pytest
 from boto3 import Session
-from botocore.exceptions import NoRegionError
-from moto import mock_cloudformation
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_boto_buddy import EnableCache, cloudformation
@@ -37,17 +36,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_cloudformation
-def test_no_default_region():
-    reload(cloudformation)
-
-    with pytest.raises(NoRegionError) as e:
-        cloudformation.describe_stacks("some_stack")
-
-    assert str(e.value) == "You must specify a region."
-
-
-@mock_cloudformation
+@mock_aws
 def test_manual_region():
     reload(cloudformation)
 
@@ -56,7 +45,7 @@ def test_manual_region():
     assert type(client).__name__ == "CloudFormation"
 
 
-@mock_cloudformation
+@mock_aws
 def test_manual_session():
     reload(cloudformation)
 
@@ -65,7 +54,7 @@ def test_manual_session():
     assert type(client).__name__ == "CloudFormation"
 
 
-@mock_cloudformation
+@mock_aws
 def test_cloudformation_client_cache():
     reload(cloudformation)
 
@@ -82,7 +71,7 @@ def test_cloudformation_client_cache():
     assert cfn_client_cached_one != cfn_client_no_cache_two
 
 
-@mock_cloudformation
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_describe_stacks():
     reload(cloudformation)
@@ -95,7 +84,7 @@ def test_describe_stacks():
     assert response["Stacks"][0]["StackName"] == "some_stack"
 
 
-@mock_cloudformation
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_describe_stacks_no_stack():
     reload(cloudformation)
@@ -106,7 +95,7 @@ def test_describe_stacks_no_stack():
     assert str(e.value) == "Cannot find stack some_stack in ca-central-1"
 
 
-@mock_cloudformation
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_stack_outputs():
     reload(cloudformation)

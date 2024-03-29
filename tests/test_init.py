@@ -2,7 +2,7 @@ import os
 from importlib import reload
 
 import pytest
-from moto import mock_s3
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 import skymantle_boto_buddy
@@ -16,7 +16,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_disable_client_cache():
     reload(skymantle_boto_buddy)
@@ -27,7 +27,7 @@ def test_disable_client_cache():
     assert id(s3_client_cached_one) != id(s3_client_cached_two)
 
 
-@mock_s3
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_disable_resource_cache():
     reload(skymantle_boto_buddy)

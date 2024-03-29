@@ -66,13 +66,12 @@ def update_item_simplified(
     values = {}
     names = {}
 
-    count = 0
-    for field, value in update_map.items():
-        count += 1
+    # count = 0
+    for count, field in enumerate(update_map):
         attribute = f"attr{count}"
 
         names[f"#{attribute}"] = field
-        values[f":{attribute}"] = value
+        values[f":{attribute}"] = update_map[field]
         expressions.append(f"#{attribute} = :{attribute}")
 
     response = table.update_item(

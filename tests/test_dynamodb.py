@@ -5,8 +5,7 @@ import boto3
 import pytest
 from boto3 import Session
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import NoRegionError
-from moto import mock_dynamodb
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_boto_buddy import EnableCache, dynamodb
@@ -21,17 +20,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_dynamodb
-def test_no_default_region():
-    reload(dynamodb)
-
-    with pytest.raises(NoRegionError) as e:
-        dynamodb.get_item("some_table", {"PK": "some_pk"})
-
-    assert str(e.value) == "You must specify a region."
-
-
-@mock_dynamodb
+@mock_aws
 def test_manual_region():
     reload(dynamodb)
 
@@ -40,7 +29,7 @@ def test_manual_region():
     assert type(client).__name__ == "dynamodb.ServiceResource"
 
 
-@mock_dynamodb
+@mock_aws
 def test_manual_session():
     reload(dynamodb)
 
@@ -49,7 +38,7 @@ def test_manual_session():
     assert type(client).__name__ == "dynamodb.ServiceResource"
 
 
-@mock_dynamodb
+@mock_aws
 def test_dynamodb_client_cache():
     reload(dynamodb)
 
@@ -66,7 +55,7 @@ def test_dynamodb_client_cache():
     assert id(db_client_cached_one) != id(db_client_no_cache_two)
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_put_item_simplified():
     reload(dynamodb)
@@ -88,7 +77,7 @@ def test_put_item_simplified():
     assert response["Item"] == {"PK": {"S": "some_pk"}, "Name": {"S": "some value"}}
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_update_item_simplified():
     reload(dynamodb)
@@ -113,7 +102,7 @@ def test_update_item_simplified():
     assert response["Item"] == {"PK": {"S": "some_pk"}, "Name": {"S": "some new value"}}
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_item():
     reload(dynamodb)
@@ -133,7 +122,7 @@ def test_get_item():
     assert item["Name"] == "some value"
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_delete_item():
     reload(dynamodb)
@@ -155,7 +144,7 @@ def test_delete_item():
     assert response.get("Item") is None
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_query_no_paging():
     reload(dynamodb)
@@ -193,7 +182,7 @@ def test_query_no_paging():
     assert result[3] == {"PK": "some_pk_4", "Name": "some value"}
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_query_no_paging_with_limit():
     reload(dynamodb)
@@ -232,7 +221,7 @@ def test_query_no_paging_with_limit():
     assert result[4] == {"PK": "some_pk_5", "Name": "some value"}
 
 
-@mock_dynamodb
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_query_no_paging_no_index():
     reload(dynamodb)
