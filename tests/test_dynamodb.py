@@ -24,7 +24,7 @@ def environment(mocker: MockerFixture):
 def test_manual_region():
     reload(dynamodb)
 
-    client = dynamodb.get_dynamodb_resource("ca-central-1")
+    client = dynamodb.get_dynamodb_resource(region_name="ca-central-1")
 
     assert type(client).__name__ == "dynamodb.ServiceResource"
 
@@ -33,7 +33,7 @@ def test_manual_region():
 def test_manual_session():
     reload(dynamodb)
 
-    client = dynamodb.get_dynamodb_resource("ca-central-1", Session())
+    client = dynamodb.get_dynamodb_resource(region_name="ca-central-1", session=Session())
 
     assert type(client).__name__ == "dynamodb.ServiceResource"
 
@@ -42,13 +42,13 @@ def test_manual_session():
 def test_dynamodb_client_cache():
     reload(dynamodb)
 
-    db_client_cached_one = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.YES)
-    db_client_cached_two = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.YES)
+    db_client_cached_one = dynamodb.get_dynamodb_resource(region_name="ca-central-1", enable_cache=EnableCache.YES)
+    db_client_cached_two = dynamodb.get_dynamodb_resource(region_name="ca-central-1", enable_cache=EnableCache.YES)
 
     assert id(db_client_cached_one) == id(db_client_cached_two)
 
-    db_client_no_cache_one = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.NO)
-    db_client_no_cache_two = dynamodb.get_dynamodb_resource("ca-central-1", enable_cache=EnableCache.NO)
+    db_client_no_cache_one = dynamodb.get_dynamodb_resource(region_name="ca-central-1", enable_cache=EnableCache.NO)
+    db_client_no_cache_two = dynamodb.get_dynamodb_resource(region_name="ca-central-1", enable_cache=EnableCache.NO)
 
     assert id(db_client_no_cache_one) != id(db_client_no_cache_two)
     assert id(db_client_cached_one) != id(db_client_no_cache_one)
@@ -119,7 +119,27 @@ def test_get_item():
 
     item = dynamodb.get_item("some_table", {"PK": "some_pk"})
 
-    assert item["Name"] == "some value"
+    assert item == {"PK": "some_pk", "Name": "some value"}
+
+
+@mock_aws
+@pytest.mark.usefixtures("environment")
+def test_get_item_projection_expressions():
+    reload(dynamodb)
+
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[{"AttributeName": "PK", "AttributeType": "S"}],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+    )
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk"}, "Field_Name": {"S": "some value"}})
+
+    item = dynamodb.get_item("some_table", {"PK": "some_pk"}, ["Field_Name"])
+
+    assert item == {"Field_Name": "some value"}
 
 
 @mock_aws
@@ -249,3 +269,39 @@ def test_query_no_paging_no_index():
     assert len(result) == 2
     assert result[0] == {"PK": "some_pk_1", "Name": "some value 1"}
     assert result[1] == {"PK": "some_pk_1", "Name": "some value 2"}
+
+
+@mock_aws
+@pytest.mark.usefixtures("environment")
+def test_query_no_paging_project_expressions():
+    reload(dynamodb)
+
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[
+            {"AttributeName": "PK", "AttributeType": "S"},
+            {"AttributeName": "Field_Name", "AttributeType": "S"},
+        ],
+        KeySchema=[
+            {"AttributeName": "PK", "KeyType": "HASH"},
+            {"AttributeName": "Field_Name", "KeyType": "RANGE"},
+        ],
+    )
+    dynamodb_client.put_item(
+        TableName="some_table", Item={"PK": {"S": "some_pk_1"}, "Field_Name": {"S": "some value 1"}}
+    )
+    dynamodb_client.put_item(
+        TableName="some_table", Item={"PK": {"S": "some_pk_1"}, "Field_Name": {"S": "some value 2"}}
+    )
+    dynamodb_client.put_item(
+        TableName="some_table", Item={"PK": {"S": "some_pk_2"}, "Field_Name": {"S": "some value 3"}}
+    )
+
+    result = dynamodb.query_no_paging("some_table", Key("PK").eq("some_pk_1"), project_expressions=["Field_Name"])
+
+    assert len(result) == 2
+    assert result[0] == {"Field_Name": "some value 1"}
+    assert result[1] == {"Field_Name": "some value 2"}
