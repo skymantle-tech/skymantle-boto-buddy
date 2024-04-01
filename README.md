@@ -35,6 +35,7 @@ The library provides the following functions.
   - `update_item_simplified`
   - `get_item`
   - `delete_item`
+  - `query`
   - `query_no_paging`
 - S3
   - `get_s3_client`
@@ -132,13 +133,16 @@ def test_some_function(mock_dynamodb):
     mock_dynamodb.get_item.return_value = {"PK": "some_pk", "Name": "some value"}
 
     result = my_file.some_function()
+    
+    mock_dynamodb.get_item.assert_called_with("table_name", {"PK": "some_key"})
     assert result == {"PK": "some_pk", "Name": "some value"}
 ```
 
 ## Source Code Dev Notes
 
 The following project commands are supported:
-- `make setup` - Installs all dependencies and creates virtual environment
-- `make unitTests` - runs unit tests
-- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
+- `make clean` - Deletes virtual environment
+- `make install` - Installs all dependencies and creates virtual environment
+- `make unit_tests` - runs unit tests
+- `make lint_and_analysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
 - `make build` - Creates distribution
