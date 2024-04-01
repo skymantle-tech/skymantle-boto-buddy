@@ -166,6 +166,90 @@ def test_delete_item():
 
 @mock_aws
 @pytest.mark.usefixtures("environment")
+def test_query():
+    reload(dynamodb)
+
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[
+            {"AttributeName": "PK", "AttributeType": "S"},
+            {"AttributeName": "Name", "AttributeType": "S"},
+        ],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+        GlobalSecondaryIndexes=[
+            {
+                "IndexName": "Index1",
+                "KeySchema": [{"AttributeName": "Name", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+            }
+        ],
+    )
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_1"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_2"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_3"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_4"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_5"}, "Name": {"S": "some other value"}})
+
+    result = dynamodb.query("some_table", Key("Name").eq("some value"), "Index1")
+
+    assert len(result["Items"]) == 4
+    assert result["Items"][0] == {"PK": "some_pk_1", "Name": "some value"}
+    assert result["Items"][1] == {"PK": "some_pk_2", "Name": "some value"}
+    assert result["Items"][2] == {"PK": "some_pk_3", "Name": "some value"}
+    assert result["Items"][3] == {"PK": "some_pk_4", "Name": "some value"}
+
+
+@mock_aws
+@pytest.mark.usefixtures("environment")
+def test_query_paging():
+    reload(dynamodb)
+
+    dynamodb_client = boto3.client("dynamodb")
+
+    dynamodb_client.create_table(
+        BillingMode="PAY_PER_REQUEST",
+        TableName="some_table",
+        AttributeDefinitions=[
+            {"AttributeName": "PK", "AttributeType": "S"},
+            {"AttributeName": "Name", "AttributeType": "S"},
+        ],
+        KeySchema=[{"AttributeName": "PK", "KeyType": "HASH"}],
+        GlobalSecondaryIndexes=[
+            {
+                "IndexName": "Index1",
+                "KeySchema": [{"AttributeName": "Name", "KeyType": "HASH"}],
+                "Projection": {"ProjectionType": "ALL"},
+            }
+        ],
+    )
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_1"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_2"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_3"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_4"}, "Name": {"S": "some value"}})
+    dynamodb_client.put_item(TableName="some_table", Item={"PK": {"S": "some_pk_5"}, "Name": {"S": "some other value"}})
+
+    result = dynamodb.query("some_table", Key("Name").eq("some value"), "Index1", limit=2)
+
+    assert len(result["Items"]) == 2
+    assert result["Items"][0] == {"PK": "some_pk_1", "Name": "some value"}
+    assert result["Items"][1] == {"PK": "some_pk_2", "Name": "some value"}
+
+    last_evaluated_key = result["LastEvaluatedKey"]
+
+    result = dynamodb.query(
+        "some_table", Key("Name").eq("some value"), "Index1", limit=2, last_evaluated_key=last_evaluated_key
+    )
+
+    assert len(result["Items"]) == 2
+    assert result["Items"][0] == {"PK": "some_pk_3", "Name": "some value"}
+    assert result["Items"][1] == {"PK": "some_pk_4", "Name": "some value"}
+
+
+@mock_aws
+@pytest.mark.usefixtures("environment")
 def test_query_no_paging():
     reload(dynamodb)
 

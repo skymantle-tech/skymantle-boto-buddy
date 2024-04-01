@@ -120,12 +120,13 @@ def delete_item(
     table.delete_item(Key=key)
 
 
-def query_no_paging(
+def query(
     table_name: str,
     key_condition_expression,
     index_name: str | None = None,
     limit: int | None = None,
     project_expressions: list[str] = [],
+    last_evaluated_key: dict = None,
     *,
     region_name: str | None = None,
     session: Session = None,
@@ -145,17 +146,52 @@ def query_no_paging(
     if isinstance(project_expressions, list) and len(project_expressions) > 0:
         query_kwargs["ProjectionExpression"] = ", ".join(project_expressions)
 
-    items = []
+    if last_evaluated_key:
+        query_kwargs["ExclusiveStartKey"] = last_evaluated_key
 
     results = table.query(**query_kwargs)
+    return {"Items": results.get("Items", []), "LastEvaluatedKey": results.get("LastEvaluatedKey", None)}
+
+
+def query_no_paging(
+    table_name: str,
+    key_condition_expression,
+    index_name: str | None = None,
+    limit: int | None = None,
+    project_expressions: list[str] = [],
+    *,
+    region_name: str | None = None,
+    session: Session = None,
+) -> list[dict[str, Any]]:
+    items = []
+
+    results = query(
+        table_name,
+        key_condition_expression,
+        index_name,
+        limit,
+        project_expressions,
+        region_name=region_name,
+        session=session,
+    )
+
     for item in results.get("Items", []):
         items.append(item)
 
     last_evaluated_key = results.get("LastEvaluatedKey", None)
     while last_evaluated_key:
-        query_kwargs["ExclusiveStartKey"] = last_evaluated_key
 
-        results = table.query(**query_kwargs)
+        results = query(
+            table_name,
+            key_condition_expression,
+            index_name,
+            limit,
+            project_expressions,
+            last_evaluated_key,
+            region_name=region_name,
+            session=session,
+        )
+
         for item in results.get("Items", []):
             items.append(item)
 
