@@ -90,7 +90,7 @@ def update_item_simplified(
 def get_item(
     table_name: str,
     key: dict[str, Any],
-    project_expressions: list[str] = [],
+    projection_expressions: list[str] | None = None,
     *,
     region_name: str | None = None,
     session: Session = None,
@@ -99,8 +99,8 @@ def get_item(
 
     kwargs = {"Key": key}
 
-    if isinstance(project_expressions, list) and len(project_expressions) > 0:
-        kwargs["ProjectionExpression"] = ", ".join(project_expressions)
+    if isinstance(projection_expressions, list) and len(projection_expressions) > 0:
+        kwargs["ProjectionExpression"] = ", ".join(projection_expressions)
 
     response = table.get_item(**kwargs)
 
@@ -125,8 +125,8 @@ def query(
     key_condition_expression,
     index_name: str | None = None,
     limit: int | None = None,
-    project_expressions: list[str] = [],
-    last_evaluated_key: dict = None,
+    project_expressions: list[str] | None = None,
+    last_evaluated_key: dict | None = None,
     *,
     region_name: str | None = None,
     session: Session = None,
@@ -158,7 +158,7 @@ def query_no_paging(
     key_condition_expression,
     index_name: str | None = None,
     limit: int | None = None,
-    project_expressions: list[str] = [],
+    projection_expressions: list[str] | None = None,
     *,
     region_name: str | None = None,
     session: Session = None,
@@ -170,7 +170,7 @@ def query_no_paging(
         key_condition_expression,
         index_name,
         limit,
-        project_expressions,
+        projection_expressions,
         region_name=region_name,
         session=session,
     )
@@ -186,7 +186,7 @@ def query_no_paging(
             key_condition_expression,
             index_name,
             limit,
-            project_expressions,
+            projection_expressions,
             last_evaluated_key,
             region_name=region_name,
             session=session,

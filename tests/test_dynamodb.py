@@ -384,7 +384,7 @@ def test_query_no_paging_project_expressions():
         TableName="some_table", Item={"PK": {"S": "some_pk_2"}, "Field_Name": {"S": "some value 3"}}
     )
 
-    result = dynamodb.query_no_paging("some_table", Key("PK").eq("some_pk_1"), project_expressions=["Field_Name"])
+    result = dynamodb.query_no_paging("some_table", Key("PK").eq("some_pk_1"), projection_expressions=["Field_Name"])
 
     assert len(result) == 2
     assert result[0] == {"Field_Name": "some value 1"}
