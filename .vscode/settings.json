@@ -19,5 +19,17 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "yaml.validate": false
+    "yaml.validate": false,
+    "cSpell.words": [
+        "boto",
+        "botocore",
+        "fileobj",
+        "keepends",
+        "moto",
+        "pytest",
+        "skymantle",
+        "stepfunction",
+        "stepfunctions",
+        "usefixtures"
+    ]
 }

@@ -25,7 +25,7 @@ if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
     get_cloudformation_client()
 
 
-def describe_stacks(stack_name: str, region_name: str | None = None, session: Session = None) -> dict:
+def describe_stacks(stack_name: str, *, region_name: str | None = None, session: Session = None) -> dict:
     cloudformation_client = get_cloudformation_client(region_name, session)
     try:
         response = cloudformation_client.describe_stacks(StackName=stack_name)
@@ -35,8 +35,8 @@ def describe_stacks(stack_name: str, region_name: str | None = None, session: Se
     return response
 
 
-def get_stack_outputs(stack_name: str, region_name: str | None = None, session: Session = None) -> dict:
-    response = describe_stacks(stack_name, region_name, session)
+def get_stack_outputs(stack_name: str, *, region_name: str | None = None, session: Session = None) -> dict:
+    response = describe_stacks(stack_name, region_name=region_name, session=session)
 
     stack_outputs = response["Stacks"][0]["Outputs"]
 

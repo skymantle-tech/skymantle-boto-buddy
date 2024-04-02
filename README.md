@@ -2,9 +2,9 @@
 
 # Skymantle Boto Buddy
 
-A wrappper for boto3 to access common aws severless services primarily used for aws Lambda. By default the wrapper is dependent on using boto3 configuration through [environment variables](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables) for setting credentials for accessing aws resources. It's also possible to provide a `boto3.Session` object for setting credentials.
+A wrapper for boto3 to access common aws serverless services primarily used for aws Lambda. By default the wrapper is dependent on using boto3 configuration through [environment variables](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables) for setting credentials for accessing aws resources. It's also possible to provide a `boto3.Session` object for setting credentials.
 
-When used within the context of an aws lambda function, no creditials are required and instances of boto3 resource and clients are created during lambda initialization when importing helpers. The library determines its running in the context of a lambda function but looking for the `AWS_LAMBDA_FUNCTION_NAME` environment variable.
+When used within the context of an aws lambda function, no credentials are required and instances of boto3 resource and clients are created during lambda initialization when importing helpers. The library determines its running in the context of a lambda function but looking for the `AWS_LAMBDA_FUNCTION_NAME` environment variable.
 
 The boto3 client and resource objects are cached but it is possible to also get uncached instances or cache can be disabled globally by setting the `BOTO_BUDDY_DISABLE_CACHE` environment variable. Supported values are `1`, `true`, `yes` and `on`.
 
@@ -35,6 +35,7 @@ The library provides the following functions.
   - `update_item_simplified`
   - `get_item`
   - `delete_item`
+  - `query`
   - `query_no_paging`
 - S3
   - `get_s3_client`
@@ -77,7 +78,7 @@ The library provides the following functions.
 
 ### Examples
 
-- running inside a lambda function or using environment variable creditional
+- running inside a lambda function or using environment variable credentials
 
 ```python
 from skymantle_boto_buddy import dynamodb
@@ -85,7 +86,7 @@ from skymantle_boto_buddy import dynamodb
 dynamodb.put_item_simplified("table_name", {"PK": "some_key", "Description": "Some description"})
 ```
 
-- providing a Session and specifiying a profile named `developer`
+- providing a Session and specifying a profile named `developer`
 
 ```python
 from boto3 import Session
@@ -132,13 +133,16 @@ def test_some_function(mock_dynamodb):
     mock_dynamodb.get_item.return_value = {"PK": "some_pk", "Name": "some value"}
 
     result = my_file.some_function()
+    
+    mock_dynamodb.get_item.assert_called_with("table_name", {"PK": "some_key"})
     assert result == {"PK": "some_pk", "Name": "some value"}
 ```
 
 ## Source Code Dev Notes
 
 The following project commands are supported:
-- `make setup` - Installs all dependencies ands creates virtual environment
-- `make unitTests` - runs unit tests
-- `make lintAndAnalysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
+- `make clean` - Deletes virtual environment
+- `make install` - Installs all dependencies and creates virtual environment
+- `make unit_tests` - runs unit tests
+- `make lint_and_analysis` - Runs [ruff](https://github.com/astral-sh/ruff), [bandit](https://github.com/PyCQA/bandit) and [black](https://github.com/psf/black)
 - `make build` - Creates distribution

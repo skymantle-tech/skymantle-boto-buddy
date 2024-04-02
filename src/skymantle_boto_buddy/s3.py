@@ -36,6 +36,7 @@ if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
 
 def get_bucket(
     name: str,
+    *,
     region_name: str | None = None,
     session: Session = None,
     config: Config = None,
@@ -46,7 +47,7 @@ def get_bucket(
 
 
 def get_object_signed_url(
-    bucket: str, key: str, expires_in: int = 300, region_name: str | None = None, session: Session = None
+    bucket: str, key: str, expires_in: int = 300, *, region_name: str | None = None, session: Session = None
 ):
     s3_client = get_s3_client(region_name, session, Config(signature_version="s3v4"))
 
@@ -58,7 +59,7 @@ def get_object_signed_url(
 
 
 def put_object_signed_url(
-    bucket: str, key: str, expires_in: int = 300, region_name: str | None = None, session: Session = None
+    bucket: str, key: str, expires_in: int = 300, *, region_name: str | None = None, session: Session = None
 ):
     s3_client = get_s3_client(region_name, session, Config(signature_version="s3v4"))
 
@@ -69,7 +70,7 @@ def put_object_signed_url(
     return response
 
 
-def get_object(bucket: str, key: str, region_name: str | None = None, session: Session = None):
+def get_object(bucket: str, key: str, *, region_name: str | None = None, session: Session = None):
     s3_client = get_s3_client(region_name, session)
     response = s3_client.get_object(
         Bucket=bucket,
@@ -78,23 +79,23 @@ def get_object(bucket: str, key: str, region_name: str | None = None, session: S
     return response
 
 
-def get_object_bytes(bucket: str, key: str, region_name: str | None = None, session: Session = None):
-    response = get_object(bucket, key, region_name, session)
+def get_object_bytes(bucket: str, key: str, *, region_name: str | None = None, session: Session = None):
+    response = get_object(bucket, key, region_name=region_name, session=session)
     return response["Body"].read()
 
 
-def get_object_json(bucket: str, key: str, region_name: str | None = None, session: Session = None):
-    s3_object = get_object_bytes(bucket, key, region_name, session)
+def get_object_json(bucket: str, key: str, *, region_name: str | None = None, session: Session = None):
+    s3_object = get_object_bytes(bucket, key, region_name=region_name, session=session)
     return json.loads(s3_object.decode("utf-8"))
 
 
-def get_object_csv_reader(bucket: str, key: str, region_name: str | None = None, session: Session = None):
-    s3_object: bytes = get_object_bytes(bucket, key, region_name, session)
+def get_object_csv_reader(bucket: str, key: str, *, region_name: str | None = None, session: Session = None):
+    s3_object: bytes = get_object_bytes(bucket, key, region_name=region_name, session=session)
     return csv.DictReader(s3_object.decode("utf-8").splitlines(keepends=True))
 
 
 def upload_fileobj(
-    bucket: str, key: str, object_data: BytesIO, region_name: str | None = None, session: Session = None
+    bucket: str, key: str, object_data: BytesIO, *, region_name: str | None = None, session: Session = None
 ):
     object_data.seek(0)
 
@@ -104,7 +105,7 @@ def upload_fileobj(
     return response
 
 
-def put_object(bucket: str, key: str, object_data, region_name: str | None = None, session: Session = None):
+def put_object(bucket: str, key: str, object_data, *, region_name: str | None = None, session: Session = None):
     s3_client = get_s3_client(region_name, session)
     response = s3_client.put_object(
         Bucket=bucket,
@@ -116,7 +117,7 @@ def put_object(bucket: str, key: str, object_data, region_name: str | None = Non
 
 
 def put_object_json(bucket: str, key: str, json_object, *, region_name: str | None = None, session: Session = None):
-    return put_object(bucket, key, json.dumps(json_object), region_name, session)
+    return put_object(bucket, key, json.dumps(json_object), region_name=region_name, session=session)
 
 
 def delete_object(bucket: str, key: str, region_name: str | None = None, session: Session = None):
@@ -141,6 +142,7 @@ def copy(
     source_key: str,
     destination_bucket: str,
     destination_key: str,
+    *,
     region_name: str | None = None,
     session: Session = None,
 ):
@@ -160,6 +162,7 @@ def list_objects_v2(
     prefix: str,
     max_keys: int | None = None,
     continuation_token: str | None = None,
+    *,
     region_name: str | None = None,
     session: Session = None,
 ):
@@ -188,6 +191,7 @@ def execute_sql_query_simplified(
     key: str,
     query: str,
     input_type: str,
+    *,
     region_name: str | None = None,
     session: Session = None,
 ) -> list[Any]:

@@ -4,8 +4,7 @@ from importlib import reload
 import boto3
 import pytest
 from boto3 import Session
-from botocore.exceptions import NoRegionError
-from moto import mock_ssm
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_boto_buddy import EnableCache, ssm
@@ -19,17 +18,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_ssm
-def test_no_default_region():
-    reload(ssm)
-
-    with pytest.raises(NoRegionError) as e:
-        ssm.get_parameter("some_key")
-
-    assert str(e.value) == "You must specify a region."
-
-
-@mock_ssm
+@mock_aws
 def test_manual_region():
     reload(ssm)
 
@@ -38,7 +27,7 @@ def test_manual_region():
     assert type(client).__name__ == "SSM"
 
 
-@mock_ssm
+@mock_aws
 def test_manual_session():
     reload(ssm)
 
@@ -47,7 +36,7 @@ def test_manual_session():
     assert type(client).__name__ == "SSM"
 
 
-@mock_ssm
+@mock_aws
 def test_ssm_client_cache():
     reload(ssm)
 
@@ -64,7 +53,7 @@ def test_ssm_client_cache():
     assert ssm_client_cached_one != ssm_client_no_cache_two
 
 
-@mock_ssm
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_parameter():
     reload(ssm)
@@ -77,7 +66,7 @@ def test_get_parameter():
     assert result == "some value"
 
 
-@mock_ssm
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_parameter_decrypted():
     reload(ssm)

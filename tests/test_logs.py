@@ -3,7 +3,7 @@ from importlib import reload
 
 import pytest
 from boto3 import Session
-from moto import mock_logs
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_boto_buddy import EnableCache, logs
@@ -17,17 +17,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-# @mock_logs
-# def test_no_default_region():
-#     reload(logs)
-
-#     with pytest.raises(NoRegionError) as e:
-#         logs.get_parameter("some_key")
-
-#     assert str(e.value) == "You must specify a region."
-
-
-@mock_logs
+@mock_aws
 def test_manual_region():
     reload(logs)
 
@@ -36,7 +26,7 @@ def test_manual_region():
     assert type(client).__name__ == "CloudWatchLogs"
 
 
-@mock_logs
+@mock_aws
 def test_manual_session():
     reload(logs)
 
@@ -45,7 +35,7 @@ def test_manual_session():
     assert type(client).__name__ == "CloudWatchLogs"
 
 
-@mock_logs
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_logs_client_cache():
     reload(logs)

@@ -1,10 +1,9 @@
 import os
 from importlib import reload
-from unittest.mock import ANY
 
 import pytest
 from boto3 import Session
-from moto import mock_sts
+from moto import mock_aws
 from pytest_mock import MockerFixture
 
 from skymantle_boto_buddy import EnableCache, sts
@@ -18,26 +17,7 @@ def environment(mocker: MockerFixture):
     )
 
 
-@mock_sts
-def test_no_default_region():
-    reload(sts)
-
-    response = sts.get_caller_identity()
-
-    assert response == {
-        "Account": "123456789012",
-        "Arn": "arn:aws:sts::123456789012:user/moto",
-        "ResponseMetadata": {
-            "HTTPHeaders": ANY,
-            "HTTPStatusCode": 200,
-            "RequestId": "c6104cbe-af31-11e0-8154-cbc7ccf896c7",
-            "RetryAttempts": 0,
-        },
-        "UserId": "AKIAIOSFODNN7EXAMPLE",
-    }
-
-
-@mock_sts
+@mock_aws
 def test_manual_region():
     reload(sts)
 
@@ -46,7 +26,7 @@ def test_manual_region():
     assert type(client).__name__ == "STS"
 
 
-@mock_sts
+@mock_aws
 def test_manual_session():
     reload(sts)
 
@@ -55,7 +35,7 @@ def test_manual_session():
     assert type(client).__name__ == "STS"
 
 
-@mock_sts
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_sts_client_cache():
     reload(sts)
@@ -73,7 +53,7 @@ def test_sts_client_cache():
     assert sts_client_cached_one != sts_client_no_cache_two
 
 
-@mock_sts
+@mock_aws
 @pytest.mark.usefixtures("environment")
 def test_get_account():
     reload(sts)

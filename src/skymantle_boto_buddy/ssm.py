@@ -21,7 +21,7 @@ if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
     get_ssm_client()
 
 
-def get_parameter(key: str, region_name: str | None = None, session: Session = None) -> str:
+def get_parameter(key: str, *, region_name: str | None = None, session: Session = None) -> str:
     client = get_ssm_client(region_name, session)
 
     response = client.get_parameter(Name=key)
@@ -30,7 +30,7 @@ def get_parameter(key: str, region_name: str | None = None, session: Session = N
     return value
 
 
-def get_parameter_decrypted(key: str, region_name: str | None = None, session: Session = None) -> str:
+def get_parameter_decrypted(key: str, *, region_name: str | None = None, session: Session = None) -> str:
     client = get_ssm_client(region_name, session)
 
     response = client.get_parameter(Name=key, WithDecryption=True)
