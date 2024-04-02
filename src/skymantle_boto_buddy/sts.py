@@ -30,4 +30,4 @@ def get_caller_identity(region_name: str | None = None, session: Session = None)
 
 
 def get_caller_account(region_name: str | None = None, session: Session = None) -> str:
-    return get_caller_identity()["Account"]
+    return get_caller_identity(region_name, session)["Account"]

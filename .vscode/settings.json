@@ -24,6 +24,7 @@
         "boto",
         "botocore",
         "fileobj",
+        "keepends",
         "moto",
         "pytest",
         "skymantle",
