@@ -125,7 +125,7 @@ def query(
     key_condition_expression,
     index_name: str | None = None,
     limit: int | None = None,
-    project_expressions: list[str] | None = None,
+    projection_expressions: list[str] | None = None,
     last_evaluated_key: dict | None = None,
     *,
     region_name: str | None = None,
@@ -143,8 +143,8 @@ def query(
     if limit:
         query_kwargs["Limit"] = limit
 
-    if isinstance(project_expressions, list) and len(project_expressions) > 0:
-        query_kwargs["ProjectionExpression"] = ", ".join(project_expressions)
+    if isinstance(projection_expressions, list) and len(projection_expressions) > 0:
+        query_kwargs["ProjectionExpression"] = ", ".join(projection_expressions)
 
     if last_evaluated_key:
         query_kwargs["ExclusiveStartKey"] = last_evaluated_key
